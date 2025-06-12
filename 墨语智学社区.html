@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>科技社区 - 墨语智学</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366F1',  // 紫色调
+                        secondary: '#38BDF8', // 科技蓝
+                        accent: '#A78BFA',   // 浅紫色
+                        dark: '#0F172A',
+                        light: '#F8FAFC'
+                    },
+                    borderRadius: {
+                        'none': '0px',
+                        'sm': '2px',
+                        DEFAULT: '4px',
+                        'md': '8px',
+                        'lg': '12px',
+                        'xl': '16px',
+                        '2xl': '20px',
+                        '3xl': '24px',
+                        'full': '9999px',
+                        'button': '4px'
+                    },
+                    fontFamily: {
+                        'sans': ['Poppins', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            min-height: 100vh;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+            color: #F8FAFC;
+        }
+        .neural-bg {
+            background-image: url('https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=1471&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.05;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: -1;
+            pointer-events: none;
+        }
+        .glass-effect {
+            backdrop-filter: blur(12px);
+            background-color: rgba(15, 23, 42, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(56, 189, 248, 0.2);
+            border-color: rgba(167, 139, 250, 0.3);
+        }
+        .community-post {
+            transition: all 0.2s ease;
+        }
+        .community-post:hover {
+            background-color: rgba(99, 102, 241, 0.15);
+        }
+        .tag-hover:hover {
+            background-color: rgba(56, 189, 248, 0.15);
+            color: #38BDF8;
+        }
+        .active-tab {
+            background-color: rgba(56, 189, 248, 0.15);
+            color: #38BDF8;
+            font-weight: 600;
+        }
+        .active-tab::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: #38BDF8;
+            border-radius: 3px;
+        }
+        .scene-preview {
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .scene-preview:hover {
+            transform: scale(1.03);
+            box-shadow: 0 10px 25px rgba(167, 139, 250, 0.3);
+        }
+        .scene-preview::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(15, 23, 42, 0.8) 0%, transparent 50%);
+        }
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(56, 189, 248, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+        }
+        .glow-text {
+            text-shadow: 0 0 8px rgba(167, 139, 250, 0.6);
+        }
+        .gradient-border {
+            position: relative;
+            border-radius: 12px;
+        }
+        .gradient-border::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 12px;
+            padding: 2px;
+            background: linear-gradient(135deg, #6366F1, #38BDF8);
+            -webkit-mask: 
+                linear-gradient(#fff 0 0) content-box, 
+                linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask: 
+                linear-gradient(#fff 0 0) content-box, 
+                linear-gradient(#fff 0 0);
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+        .ai-assistant-card {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(56, 189, 248, 0.15));
+            border: 1px solid rgba(167, 139, 250, 0.2);
+        }
+        
+        /* 机械人助手样式 - 修改为趴在边栏上的样式 */
+        #robot-assistant-container {
+            position: fixed;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 60px;
+            height: 120px;
+            z-index: 1000;
+            pointer-events: auto;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+        
+        .robot-image-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .robot-image {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            border-radius: 50% 0 0 50%;
+            box-shadow: -4px 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            border: 2px solid white;
+            position: absolute;
+            right: 0;
+        }
+        
+        /* 消息气泡 - 调整位置 */
+        .robot-message {
+            position: absolute;
+            right: 90px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: white;
+            padding: 12px 16px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 240px;
+            font-size: 14px;
+            line-height: 1.4;
+            display: none;
+            animation: fadeIn 0.3s ease;
+            color: #333;
+        }
+        
+        .robot-message:after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: -8px;
+            transform: translateY(-50%);
+            border-width: 8px;
+            border-style: solid;
+            border-color: transparent transparent transparent white;
+        }
+        
+        /* 动画效果 */
+        .talk-animation {
+            animation: talk 0.5s infinite alternate;
+        }
+        
+        .happy-animation {
+            animation: happy 1s ease;
+        }
+        
+        .sad-animation {
+            animation: sad 1s ease;
+        }
+        
+        .nod-animation {
+            animation: nod 0.5s ease;
+        }
+        
+        @keyframes talk {
+            0% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-3px) scale(1.05); }
+            100% { transform: translateY(0) scale(1); }
+        }
+        
+        @keyframes happy {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(10deg); }
+            50% { transform: rotate(-10deg); }
+            75% { transform: rotate(5deg); }
+        }
+        
+        @keyframes sad {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(5px); }
+        }
+        
+        @keyframes nod {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="neural-bg"></div>
+    
+    <!-- 导航栏 -->
+    <nav class="flex items-center justify-between px-6 lg:px-12 h-16 glass-effect fixed top-0 left-0 right-0 z-50">
+        <div class="flex items-center gap-8 lg:gap-16">
+            <a href="墨语智学首页.html" class="flex items-center gap-3">
+                <span class="text-secondary text-2xl font-bold tracking-tight glow-text">墨语智学</span>
+            </a>
+            <div class="hidden lg:flex items-center gap-8">
+                <a href="墨语智学计划.html" class="text-gray-300 hover:text-accent transition-colors font-medium">备考规划</a>
+                <a href="#" class="text-gray-300 hover:text-accent transition-colors font-medium">在线教学</a>
+                <a href="墨语智学真题.html" class="text-gray-300 hover:text-accent transition-colors font-medium">真题练习</a>
+                <a href="墨语智学社区.html" class="text-gray-300 hover:text-accent transition-colors font-medium text-secondary">学习社区</a>
+            </div>
+        </div>
+        
+        <!-- 动态登录/用户区域 -->
+        <div class="flex items-center gap-4 lg:gap-6" id="auth-section">
+            <div id="login-btn-container">
+                <a href="墨语智学登录.html" class="flex items-center px-4 lg:px-6 py-2 bg-white/10 text-white rounded-button hover:bg-white/20 transition-colors">
+                    <span class="whitespace-nowrap font-medium text-sm lg:text-base">登录</span>
+                </a>
+            </div>
+            <a href="墨语智学聊天.html" class="flex items-center px-4 lg:px-6 py-2 bg-secondary text-dark rounded-button hover:bg-accent transition-colors">
+                <span class="whitespace-nowrap font-medium text-sm lg:text-base">免费试用</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- 主内容区域 -->
+    <main class="pt-24 pb-16 max-w-[1440px] mx-auto px-6">
+        <!-- 社区头部 -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+            <div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-secondary mb-2 glow-text">AI 学习社区</h1>
+                <p class="text-gray-400">与全球学习者交流心得，分享经验，共同进步</p>
+            </div>
+            <div class="mt-4 md:mt-0">
+                <button class="flex items-center gap-2 px-4 lg:px-6 py-2 bg-gradient-to-r from-primary to-secondary text-dark rounded-button hover:opacity-90 transition-all pulse-animation">
+                    <i class="fas fa-plus"></i>
+                    <span>发布新话题</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 社区内容 -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <!-- 左侧内容 - 主讨论区 -->
+            <div class="lg:col-span-3 space-y-6">
+                <!-- 分类标签 -->
+                <div class="glass-effect rounded-xl p-4 gradient-border">
+                    <div class="flex flex-wrap gap-2">
+                        <button class="px-3 py-1 bg-white/5 text-secondary rounded-full text-sm active-tab relative">
+                            全部
+                        </button>
+                        <button class="px-3 py-1 bg-white/5 text-gray-300 rounded-full text-sm hover:bg-secondary/10 hover:text-secondary transition-colors tag-hover">
+                            四级备考
+                        </button>
+                        <button class="px-3 py-1 bg-white/5 text-gray-300 rounded-full text-sm hover:bg-secondary/10 hover:text-secondary transition-colors tag-hover">
+                            六级备考
+                        </button>
+                        <button class="px-3 py-1 bg-white/5 text-gray-300 rounded-full text-sm hover:bg-secondary/10 hover:text-secondary transition-colors tag-hover">
+                            词汇学习
+                        </button>
+                        <button class="px-3 py-1 bg-white/5 text-gray-300 rounded-full text-sm hover:bg-secondary/10 hover:text-secondary transition-colors tag-hover">
+                            听力技巧
+                        </button>
+                        <button class="px-3 py-1 bg-white/5 text-gray-300 rounded-full text-sm hover:bg-secondary/10 hover:text-secondary transition-colors tag-hover">
+                            写作指导
+                        </button>
+                        <button class="px-3 py-1 bg-white/5 text-gray-300 rounded-full text-sm hover:bg-secondary/10 hover:text-secondary transition-colors tag-hover">
+                            翻译技巧
+                        </button>
+                        <button class="px-3 py-1 bg-white/5 text-gray-300 rounded-full text-sm hover:bg-secondary/10 hover:text-secondary transition-colors tag-hover">
+                            学习工具
+                        </button>
+                        <button class="px-3 py-1 bg-white/5 text-gray-300 rounded-full text-sm hover:bg-secondary/10 hover:text-secondary transition-colors tag-hover">
+                            经验分享
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 虚拟学习场景 -->
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="scene-preview rounded-lg h-32 cursor-pointer" style="background-image: url('https://images.unsplash.com/photo-1521587760476-6c12a4b040da?q=80&w=1470&auto=format&fit=crop')">
+                        <div class="absolute bottom-0 left-0 p-4 z-10">
+                            <h3 class="font-semibold">图书馆</h3>
+                            <p class="text-xs text-gray-300">专注学习</p>
+                        </div>
+                    </div>
+                    <div class="scene-preview rounded-lg h-32 cursor-pointer" style="background-image: url('https://images.unsplash.com/photo-1445116572660-236099ec97a0?q=80&w=1471&auto=format&fit=crop')">
+                        <div class="absolute bottom-0 left-0 p-4 z-10">
+                            <h3 class="font-semibold">咖啡厅</h3>
+                            <p class="text-xs text-gray-300">轻松交流</p>
+                        </div>
+                    </div>
+                    <div class="scene-preview rounded-lg h-32 cursor-pointer" style="background-image: url('https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=1494&auto=format&fit=crop')">
+                        <div class="absolute bottom-0 left-0 p-4 z-10">
+                            <h3 class="font-semibold">星空</h3>
+                            <p class="text-xs text-gray-300">创意空间</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 帖子列表 -->
+                <div class="space-y-4">
+                    <!-- 置顶帖子 -->
+                    <div class="community-post glass-effect rounded-xl p-6 card-hover relative border-l-4 border-accent">
+                        <div class="absolute top-4 right-4 bg-accent/20 text-accent px-2 py-1 rounded-full text-xs flex items-center gap-1">
+                            <i class="fas fa-thumbtack"></i>
+                            <span>置顶</span>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=1588&auto=format&fit=crop" class="w-12 h-12 rounded-full object-cover" alt="用户头像">
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div>
+                                        <h3 class="font-semibold text-white">官方助手</h3>
+                                        <p class="text-xs text-gray-400">墨语智学 · 昨天</p>
+                                    </div>
+                                    <span class="px-2 py-1 bg-secondary/10 text-secondary rounded-full text-xs">公告</span>
+                                </div>
+                                <h4 class="text-lg font-medium text-white mb-2">社区规范 & 发帖指南</h4>
+                                <p class="text-gray-300 mb-4">欢迎来到墨语智学社区！为了营造良好的学习氛围，请遵守以下规则：1. 禁止发布广告 2. 尊重他人观点 3. 分享真实经验 4. 使用恰当标签...</p>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex gap-4">
+                                        <span class="flex items-center gap-1 text-gray-400 text-sm">
+                                            <i class="far fa-eye"></i> 1,256
+                                        </span>
+                                        <span class="flex items-center gap-1 text-gray-400 text-sm">
+                                            <i class="far fa-comment"></i> 89
+                                        </span>
+                                        <span class="flex items-center gap-1 text-gray-400 text-sm">
+                                            <i class="far fa-heart"></i> 156
+                                        </span>
+                                    </div>
+                                    <button class="text-secondary text-sm hover:underline">阅读更多</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 帖子1 -->
+                    <div class="community-post glass-effect rounded-xl p-6 card-hover">
+                        <div class="flex items-start gap-4">
+                            <img src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=1587&auto=format&fit=crop" class="w-12 h-12 rounded-full object-cover" alt="用户头像">
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div>
+                                        <h3 class="font-semibold text-white">林美琪</h3>
+                                        <p class="text-xs text-gray-400">浙江大学 · 3小时前</p>
+                                    </div>
+                                    <span class="px-2 py-1 bg-secondary/10 text-secondary rounded-full text-xs">四级备考</span>
+                                </div>
+                                <h4 class="text-lg font-medium text-white mb-2">分享我的四级听力满分技巧</h4>
+                                <p class="text-gray-300 mb-4">备考四级的同学们，我刚刚查分听力部分拿了满分！想分享一下我的备考经验，主要是精听+泛听结合的方法，每天坚持30分钟精听真题，1小时泛听BBC/VOA...</p>
+                                <div class="flex items-center gap-3 mb-4">
+                                    <div class="flex items-center gap-1 text-xs text-gray-400">
+                                        <i class="fas fa-star text-yellow-400"></i>
+                                        <span>4.9</span>
+                                    </div>
+                                    <div class="flex items-center gap-1 text-xs text-gray-400">
+                                        <i class="fas fa-check-circle text-green-400"></i>
+                                        <span>已验证</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex gap-4">
+                                        <span class="flex items-center gap-1 text-gray-400 text-sm">
+                                            <i class="far fa-eye"></i> 256
+                                        </span>
+                                        <span class="flex items-center gap-1 text-gray-400 text-sm">
+                                            <i class="far fa-comment"></i> 32
+                                        </span>
+                                        <span class="flex items-center gap-1 text-gray-400 text-sm">
+                                            <i class="far fa-heart"></i> 48
+                                        </span>
+                                    </div>
+                                    <button class="text-secondary text-sm hover:underline">阅读更多</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 帖子2 -->
+                    <div class="community-post glass-effect rounded-xl p-6 card-hover">
+                        <div class="flex items-start gap-4">
+                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1587&auto=format&fit=crop" class="w-12 h-12 rounded-full object-cover" alt="用户头像">
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div>
+                                        <h3 class="font-semibold text-white">张志远</h3>
+                                        <p class="text-xs text-gray-400">北京大学 · 5小时前</p>
+                                    </div>
+                                    <span class="px-2 py-1 bg-secondary/10 text-secondary rounded-full text-xs">词汇学习</span>
+                                </div>
+                                <h4 class="text-lg font-medium text-white mb-2">整理的高频六级词汇表分享</h4>
+                                <p class="text-gray-300 mb-4">备考六级期间整理的近5年真题高频词汇表，包含词频统计和真题例句，希望对大家有帮助。这份词汇表按照词频排序，包含1200个高频词汇...</p>
+                                <div class="bg-white/5 p-3 rounded-lg mb-4">
+                                    <div class="flex items-center gap-3">
+                                        <i class="fas fa-file-pdf text-red-400 text-xl"></i>
+                                        <div>
+                                            <p class="font-medium text-sm">六级高频词汇表.pdf</p>
+                                            <p class="text-xs text-gray-400">2.4MB · 下载次数: 1,245</p>
+                                        </div>
+                                        <button class="ml-auto px-3 py-1 bg-secondary text-dark rounded-full text-xs hover:bg-accent transition-colors">
+                                            下载
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex gap-4">
+                                        <span class="flex items-center gap-1 text-gray-400 text-sm">
+                                            <i class="far fa-eye"></i> 189
+                                        </span>
+                                        <span class="flex items-center gap-1 text-gray-400 text-sm">
+                                            <i class="far fa-comment"></i> 24
+                                        </span>
+                                        <span class="flex items-center gap-1 text-gray-400 text-sm">
+                                            <i class="far fa-heart"></i> 56
+                                        </span>
+                                    </div>
+                                    <button class="text-secondary text-sm hover:underline">阅读更多</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 帖子3 -->
+                    <div class="community-post glass-effect rounded-xl p-6 card-hover">
+                        <div class="flex items-start gap-4">
+                            <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1588&auto=format&fit=crop" class="w-12 h-12 rounded-full object-cover" alt="用户头像">
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div>
+                                        <h3 class="font-semibold text-white">刘晓琪</h3>
+                                        <p class="text-xs text-gray-400">复旦大学 · 昨天</p>
+                                    </div>
+                                    <span class="px-2 py-1 bg-secondary/10 text-secondary rounded-full text-xs">写作指导</span>
+                                </div>
+                                <h4 class="text-lg font-medium text-white mb-2">六级写作万能模板真的有用吗？</h4>
+                                <p class="text-gray-300 mb-4">看到很多同学在背所谓的"万能模板"，作为去年写作拿到198分的过来人，想分享一下我对模板使用的看法。模板可以帮你快速搭建框架，但高分关键在于...</p>
+                                <div class="flex items-center gap-2 mb-4">
+                                    <span class="px-2 py-1 bg-accent/10 text-accent rounded-full text-xs">#写作技巧</span>
+                                    <span class="px-2 py-1 bg-accent/10 text-accent rounded-full text-xs">#高分经验</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex gap-4">
+                                        <span class="flex items-center gap-1 text-gray-400 text-sm">
+                                            <i class="far fa-eye"></i> 342
+                                        </span>
+                                        <span class="flex items-center gap-1 text-gray-400 text-sm">
+                                            <i class="far fa-comment"></i> 47
+                                        </span>
+                                        <span class="flex items-center gap-1 text-gray-400 text-sm">
+                                            <i class="far fa-heart"></i> 89
+                                        </span>
+                                    </div>
+                                    <button class="text-secondary text-sm hover:underline">阅读更多</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 帖子4 - AI生成内容 -->
+                    <div class="community-post glass-effect rounded-xl p-6 card-hover border border-accent/20">
+                        <div class="flex items-start gap-4">
+                            <div class="relative">
+                                <img src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?q=80&w=1586&auto=format&fit=crop" class="w-12 h-12 rounded-full object-cover" alt="AI头像">
+                                <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-secondary rounded-full flex items-center justify-center">
+                                    <i class="fas fa-bolt text-dark text-xs"></i>
+                                </div>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div>
+                                        <h3 class="font-semibold text-white">AI学习助手</h3>
+                                        <p class="text-xs text-gray-400">墨语智学 · 2小时前</p>
+                                    </div>
+                                    <span class="px-2 py-1 bg-accent/10 text-accent rounded-full text-xs">AI推荐</span>
+                                </div>
+                                <h4 class="text-lg font-medium text-white mb-2">根据你的学习记录推荐：听力提升计划</h4>
+                                <p class="text-gray-300 mb-4">基于社区数据分析，为你推荐以下听力提升方案：1. 每日精听15分钟 2. 每周完成2套真题 3. 睡前30分钟泛听 4. 参加本周五的听力训练营...</p>
+                                <div class="flex items-center gap-2 mb-4">
+                                    <span class="px-2 py-1 bg-white/5 text-gray-300 rounded-full text-xs flex items-center gap-1">
+                                        <i class="fas fa-user-clock"></i>
+                                        <span>个性化推荐</span>
+                                    </span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex gap-4">
+                                        <span class="flex items-center gap-1 text-gray-400 text-sm">
+                                            <i class="far fa-eye"></i> 128
+                                        </span>
+                                        <span class="flex items-center gap-1 text-gray-400 text-sm">
+                                            <i class="far fa-comment"></i> 15
+                                        </span>
+                                        <span class="flex items-center gap-1 text-gray-400 text-sm">
+                                            <i class="far fa-heart"></i> 42
+                                        </span>
+                                    </div>
+                                    <button class="text-secondary text-sm hover:underline">查看详情</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 分页 -->
+                    <div class="flex justify-center mt-8">
+                        <nav class="flex items-center gap-1">
+                            <button class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 text-gray-300 hover:bg-secondary hover:text-dark transition-colors">
+                                <i class="fas fa-chevron-left text-xs"></i>
+                            </button>
+                            <button class="w-8 h-8 flex items-center justify-center rounded-full bg-secondary text-dark">1</button>
+                            <button class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 text-gray-300 hover:bg-secondary hover:text-dark transition-colors">2</button>
+                            <button class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 text-gray-300 hover:bg-secondary hover:text-dark transition-colors">3</button>
+                            <span class="px-2 text-gray-400">...</span>
+                            <button class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 text-gray-300 hover:bg-secondary hover:text-dark transition-colors">8</button>
+                            <button class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 text-gray-300 hover:bg-secondary hover:text-dark transition-colors">
+                                <i class="fas fa-chevron-right text-xs"></i>
+                            </button>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧边栏 -->
+            <div class="space-y-6">
+                <!-- 热门话题 -->
+                <div class="glass-effect rounded-xl p-6 gradient-border">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-white">热门话题</h3>
+                        <button class="text-xs text-gray-400 hover:text-secondary transition-colors">查看更多</button>
+                    </div>
+                    <div class="space-y-3">
+                        <a href="#" class="flex items-center justify-between p-2 rounded-lg hover:bg-secondary/10 transition-colors group">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 bg-secondary rounded-full"></span>
+                                <span class="text-gray-300 group-hover:text-secondary"># 四级听力技巧</span>
+                            </div>
+                            <span class="text-xs bg-secondary/10 text-secondary px-2 py-1 rounded-full">1.2k</span>
+                        </a>
+                        <a href="#" class="flex items-center justify-between p-2 rounded-lg hover:bg-secondary/10 transition-colors group">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 bg-accent rounded-full"></span>
+                                <span class="text-gray-300 group-hover:text-secondary"># 六级高频词汇</span>
+                            </div>
+                            <span class="text-xs bg-secondary/10 text-secondary px-2 py-1 rounded-full">986</span>
+                        </a>
+                        <a href="#" class="flex items-center justify-between p-2 rounded-lg hover:bg-secondary/10 transition-colors group">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 bg-primary rounded-full"></span>
+                                <span class="text-gray-300 group-hover:text-secondary"># 写作万能模板</span>
+                            </div>
+                            <span class="text-xs bg-secondary/10 text-secondary px-2 py-1 rounded-full">754</span>
+                        </a>
+                        <a href="#" class="flex items-center justify-between p-2 rounded-lg hover:bg-secondary/10 transition-colors group">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 bg-secondary rounded-full"></span>
+                                <span class="text-gray-300 group-hover:text-secondary"># 翻译真题解析</span>
+                            </div>
+                            <span class="text-xs bg-secondary/10 text-secondary px-2 py-1 rounded-full">632</span>
+                        </a>
+                        <a href="#" class="flex items-center justify-between p-2 rounded-lg hover:bg-secondary/10 transition-colors group">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 bg-accent rounded-full"></span>
+                                <span class="text-gray-300 group-hover:text-secondary"># 阅读提速方法</span>
+                            </div>
+                            <span class="text-xs bg-secondary/10 text-secondary px-2 py-1 rounded-full">521</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 活跃用户 -->
+                <div class="glass-effect rounded-xl p-6 gradient-border">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-white">活跃用户</h3>
+                        <button class="text-xs text-gray-400 hover:text-secondary transition-colors">查看全部</button>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary/10 transition-colors">
+                            <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=1587&auto=format&fit=crop" class="w-10 h-10 rounded-full object-cover" alt="用户头像">
+                            <div>
+                                <h4 class="font-medium text-white">王教授</h4>
+                                <p class="text-xs text-gray-400">英语教学专家 · 12篇帖子</p>
+                            </div>
+                            <button class="ml-auto px-3 py-1 bg-secondary/10 text-secondary rounded-full text-xs hover:bg-secondary hover:text-dark transition-colors">
+                                关注
+                            </button>
+                        </div>
+                        <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary/10 transition-colors">
+                            <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=1587&auto=format&fit=crop" class="w-10 h-10 rounded-full object-cover" alt="用户头像">
+                            <div>
+                                <h4 class="font-medium text-white">陈明宇</h4>
+                                <p class="text-xs text-gray-400">四六级阅卷人 · 8篇帖子</p>
+                            </div>
+                            <button class="ml-auto px-3 py-1 bg-secondary/10 text-secondary rounded-full text-xs hover:bg-secondary hover:text-dark transition-colors">
+                                关注
+                            </button>
+                        </div>
+                        <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary/10 transition-colors">
+                            <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1588&auto=format&fit=crop" class="w-10 h-10 rounded-full object-cover" alt="用户头像">
+                            <div>
+                                <h4 class="font-medium text-white">张学姐</h4>
+                                <p class="text-xs text-gray-400">六级650分 · 15篇帖子</p>
+                            </div>
+                            <button class="ml-auto px-3 py-1 bg-secondary/10 text-secondary rounded-full text-xs hover:bg-secondary hover:text-dark transition-colors">
+                                关注
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 学习数据 -->
+                <div class="glass-effect rounded-xl p-6 gradient-border">
+                    <h3 class="text-lg font-semibold text-white mb-4">社区数据</h3>
+                    <div class="h-48">
+                        <canvas id="communityChart"></canvas>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 mt-4 text-center">
+                        <div class="bg-white/5 p-2 rounded-lg">
+                            <p class="text-xl font-bold text-secondary">5,824</p>
+                            <p class="text-xs text-gray-400">今日活跃</p>
+                        </div>
+                        <div class="bg-white/5 p-2 rounded-lg">
+                            <p class="text-xl font-bold text-accent">12,693</p>
+                            <p class="text-xs text-gray-400">新增帖子</p>
+                        </div>
+                        <div class="bg-white/5 p-2 rounded-lg">
+                            <p class="text-xl font-bold text-primary">32,457</p>
+                            <p class="text-xs text-gray-400">新增评论</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI助手提示 -->
+                <div class="ai-assistant-card rounded-xl p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center">
+                            <i class="fas fa-robot text-dark"></i>
+                        </div>
+                        <h3 class="font-semibold text-white">AI 学习助手</h3>
+                    </div>
+                    <p class="text-sm text-gray-300 mb-4">遇到学习问题？我们的AI助手24小时在线为您解答疑问，提供个性化学习建议。</p>
+                    <div class="flex flex-col gap-2">
+                        <button class="w-full px-4 py-2 bg-gradient-to-r from-primary to-secondary text-dark rounded-button hover:opacity-90 transition-all">
+                            立即咨询
+                        </button>
+                        <button class="w-full px-4 py-2 bg-white/5 text-white rounded-button hover:bg-white/10 transition-colors flex items-center justify-center gap-2">
+                            <i class="fas fa-magic"></i>
+                            <span>智能学习诊断</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 近期活动 -->
+                <div class="glass-effect rounded-xl p-6 gradient-border">
+                    <h3 class="text-lg font-semibold text-white mb-4">近期活动</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-start gap-3 p-2 rounded-lg hover:bg-secondary/10 transition-colors">
+                            <div class="w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center text-accent">
+                                <i class="fas fa-calendar-alt text-xs"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-medium text-white">听力训练营</h4>
+                                <p class="text-xs text-gray-400">6月15日 · 线上直播</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3 p-2 rounded-lg hover:bg-secondary/10 transition-colors">
+                            <div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-primary">
+                                <i class="fas fa-trophy text-xs"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-medium text-white">写作大赛</h4>
+                                <p class="text-xs text-gray-400">报名截止: 6月20日</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3 p-2 rounded-lg hover:bg-secondary/10 transition-colors">
+                            <div class="w-8 h-8 bg-secondary/10 rounded-full flex items-center justify-center text-secondary">
+                                <i class="fas fa-users text-xs"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-medium text-white">学习小组招募</h4>
+                                <p class="text-xs text-gray-400">每日打卡 · 互相监督</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 机械人助手容器 - 修改为趴在边栏上的样式 -->
+    <div id="robot-assistant-container">
+        <div class="robot-image-container">
+            <img src="https://imgur.la/images/2025/06/08/AB9D66DF1072932D11D8D306BE46693C.jpg" alt="小助手" class="robot-image">
+        </div>
+        <div class="robot-message"></div>
+    </div>
+
+    <script>
+        // 内嵌的auth模块
+        const authModule = (function() {
+            // 用户数据存储键名
+            const USER_STORAGE_KEY = 'moyu_user';
+            
+            // DOM元素ID常量
+            const AUTH_SECTION_ID = 'auth-section';
+            const LOGIN_BTN_CONTAINER_ID = 'login-btn-container';
+            
+            // 当前用户数据
+            let currentUser = null;
+            
+            // 初始化函数 - 在所有页面加载时调用
+            function initialize() {
+                // 从本地存储加载用户数据
+                loadUserData();
+                
+                // 更新UI
+                updateAuthUI();
+            }
+            
+            // 加载用户数据
+            function loadUserData() {
+                const userData = localStorage.getItem(USER_STORAGE_KEY);
+                if (userData) {
+                    currentUser = JSON.parse(userData);
+                }
+            }
+            
+            // 保存用户数据
+            function saveUserData(user) {
+                localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+                currentUser = user;
+            }
+            
+            // 清除用户数据
+            function clearUserData() {
+                localStorage.removeItem(USER_STORAGE_KEY);
+                currentUser = null;
+            }
+            
+            // 处理登录
+            function handleLogin(userData) {
+                saveUserData(userData);
+                updateAuthUI();
+            }
+            
+            // 处理登出
+            function handleLogout() {
+                clearUserData();
+                updateAuthUI();
+            }
+            
+            // 检查登录状态
+            function isLoggedIn() {
+                return currentUser !== null;
+            }
+            
+            // 获取当前用户
+            function getCurrentUser() {
+                return currentUser;
+            }
+            
+            // 更新认证UI
+            function updateAuthUI() {
+                const authSection = document.getElementById(AUTH_SECTION_ID);
+                const loginBtnContainer = document.getElementById(LOGIN_BTN_CONTAINER_ID);
+                
+                if (!loginBtnContainer) return;
+                
+                // 清除现有内容
+                loginBtnContainer.innerHTML = '';
+                
+                if (isLoggedIn()) {
+                    // 创建用户头像和下拉菜单
+                    createUserDropdown(loginBtnContainer);
+                } else {
+                    // 创建登录按钮
+                    createLoginButton(loginBtnContainer);
+                }
+            }
+            
+            // 创建登录按钮
+            function createLoginButton(container) {
+                const loginBtn = document.createElement('a');
+                loginBtn.href = '墨语智学登录.html';
+                loginBtn.className = 'flex items-center px-4 lg:px-6 py-2 bg-white/10 text-white rounded-button hover:bg-white/20 transition-colors';
+                loginBtn.innerHTML = '<span class="whitespace-nowrap font-medium text-sm lg:text-base">登录</span>';
+                
+                container.appendChild(loginBtn);
+            }
+            
+            // 创建用户下拉菜单
+            function createUserDropdown(container) {
+                // 用户头像按钮
+                const avatarBtn = document.createElement('div');
+                avatarBtn.className = 'relative group';
+                avatarBtn.id = 'user-dropdown';
+                
+                // 头像图片
+                const avatarImg = document.createElement('img');
+                avatarImg.src = currentUser.avatar || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=1588&auto=format&fit=crop';
+                avatarImg.alt = currentUser.name || '用户';
+                avatarImg.className = 'w-8 h-8 rounded-full cursor-pointer object-cover';
+                avatarImg.style.minWidth = '32px';
+                
+                // 下拉菜单
+                const dropdownMenu = document.createElement('div');
+                dropdownMenu.className = 'absolute right-0 mt-2 w-48 bg-dark rounded-md shadow-lg z-50 origin-top-right transform transition-all duration-200 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 border border-white/10';
+                dropdownMenu.style.transformOrigin = 'top right';
+                
+                dropdownMenu.innerHTML = `
+                    <div class="py-1" role="menu" aria-orientation="vertical">
+                        <div class="px-4 py-2 border-b border-white/10">
+                            <p class="text-sm font-medium text-white">${currentUser.name || '用户'}</p>
+                            <p class="text-xs text-gray-400">${currentUser.username || ''}</p>
+                        </div>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-300 hover:bg-secondary/10 hover:text-secondary transition-colors" role="menuitem">
+                            <i class="fas fa-user mr-2"></i>个人中心
+                        </a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-300 hover:bg-secondary/10 hover:text-secondary transition-colors" role="menuitem">
+                            <i class="fas fa-cog mr-2"></i>设置
+                        </a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-300 hover:bg-secondary/10 hover:text-secondary transition-colors" role="menuitem">
+                            <i class="fas fa-bookmark mr-2"></i>我的收藏
+                        </a>
+                        <a href="#" id="logout-btn" class="block px-4 py-2 text-sm text-gray-300 hover:bg-secondary/10 hover:text-secondary transition-colors" role="menuitem">
+                            <i class="fas fa-sign-out-alt mr-2"></i>退出登录
+                        </a>
+                    </div>
+                `;
+                
+                avatarBtn.appendChild(avatarImg);
+                avatarBtn.appendChild(dropdownMenu);
+                container.appendChild(avatarBtn);
+                
+                // 添加登出按钮事件
+                const logoutBtn = dropdownMenu.querySelector('#logout-btn');
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        handleLogout();
+                    });
+                }
+                
+                // 点击外部关闭菜单
+                document.addEventListener('click', function(e) {
+                    if (!avatarBtn.contains(e.target)) {
+                        dropdownMenu.classList.remove('opacity-100', 'scale-100');
+                        dropdownMenu.classList.add('opacity-0', 'scale-95');
+                    }
+                });
+            }
+            
+            // 公共API
+            return {
+                initialize,
+                handleLogin,
+                handleLogout,
+                isLoggedIn,
+                getCurrentUser
+            };
+        })();
+
+        // 可爱的机械人助手类 - 社区版
+        class CommunityRobotAssistant {
+            constructor(containerId) {
+                this.container = document.getElementById(containerId);
+                if (!this.container) return;
+
+                // 创建机械人元素 - 使用图片
+                this.container.innerHTML = `
+                    <div class="robot-image-container">
+                        <img src="https://imgur.la/images/2025/06/08/AB9D66DF1072932D11D8D306BE46693C.jpg" alt="小助手" class="robot-image">
+                    </div>
+                    <div class="robot-message"></div>
+                `;
+
+                // 配置 - 调整为社区相关提示
+                this.config = {
+                    position: 'right-middle',
+                    reactions: {
+                        positive: true,
+                        negative: true,
+                        encouragement: true
+                    },
+                    messages: [
+                        "需要帮助寻找学习伙伴吗？",
+                        "点击我可以获得社区热门话题推荐哦~",
+                        "有什么学习问题可以在社区提问！",
+                        "社区里有很多学霸分享经验呢！",
+                        "想了解如何高效利用社区资源吗？",
+                        "社区活动正在火热进行中，快来参加吧！",
+                        "看看社区里大家都在讨论什么话题？",
+                        "需要推荐适合你的学习小组吗？",
+                        "社区里的学习资源很丰富，快去探索吧！"
+                    ]
+                };
+
+                // 设置初始位置
+                this.setPosition(this.config.position);
+                
+                // 添加点击事件
+                this.container.addEventListener('click', () => {
+                    this.showRandomMessage(4000);
+                    this.startTalkingAnimation();
+                });
+
+                // 初始动画
+                this.playHappyAnimation();
+            }
+
+            // 设置位置
+            setPosition(position) {
+                const positions = {
+                    'right-bottom': { 
+                        right: '24px',
+                        bottom: '24px'
+                    },
+                    'right-middle': {
+                        right: '0',
+                        top: '50%',
+                        transform: 'translateY(-50%)'
+                    },
+                    'bottom-right': { right: '20px', bottom: '20px' },
+                    'bottom-left': { left: '20px', bottom: '20px' },
+                    'top-right': { right: '20px', top: '20px' },
+                    'top-left': { left: '20px', top: '20px' }
+                };
+                
+                if (positions[position]) {
+                    Object.assign(this.container.style, {
+                        position: 'fixed',
+                        ...positions[position],
+                        zIndex: '1000',
+                        pointerEvents: 'auto'
+                    });
+                    this.config.position = position;
+                }
+            }
+
+            // 显示随机消息
+            showRandomMessage(duration = 3000) {
+                const randomIndex = Math.floor(Math.random() * this.config.messages.length);
+                this.showMessage(this.config.messages[randomIndex], duration);
+            }
+
+            // 显示消息
+            showMessage(message, duration = 3000) {
+                // 创建或获取消息元素
+                if (!this.messageElement) {
+                    this.messageElement = this.container.querySelector('.robot-message');
+                }
+                
+                this.messageElement.textContent = message;
+                this.messageElement.style.display = 'block';
+                
+                // 添加动画效果
+                this.startTalkingAnimation();
+                
+                if (duration > 0) {
+                    setTimeout(() => {
+                        this.hideMessage();
+                        this.stopTalkingAnimation();
+                    }, duration);
+                }
+            }
+
+            hideMessage() {
+                if (this.messageElement) {
+                    this.messageElement.style.display = 'none';
+                }
+            }
+
+            // 开始说话动画
+            startTalkingAnimation() {
+                const image = this.container.querySelector('.robot-image');
+                image.classList.add('talk-animation');
+            }
+
+            // 停止说话动画
+            stopTalkingAnimation() {
+                const image = this.container.querySelector('.robot-image');
+                image.classList.remove('talk-animation');
+            }
+
+            // 响应正面反馈
+            reactPositive() {
+                if (this.config.reactions.positive) {
+                    this.showMessage('太棒了！继续参与社区讨论吧！', 2000);
+                    this.playHappyAnimation();
+                }
+            }
+
+            // 响应负面反馈
+            reactNegative() {
+                if (this.config.reactions.negative) {
+                    this.showMessage('别灰心，社区里有很多人愿意帮助你！', 2000);
+                    this.playSadAnimation();
+                }
+            }
+
+            // 鼓励用户
+            encourage() {
+                if (this.config.reactions.encouragement) {
+                    this.showMessage('积极参与社区讨论会有意想不到的收获哦！', 2000);
+                    this.playHappyAnimation();
+                }
+            }
+
+            // 播放开心动画
+            playHappyAnimation() {
+                const image = this.container.querySelector('.robot-image');
+                image.classList.add('happy-animation');
+                
+                setTimeout(() => {
+                    image.classList.remove('happy-animation');
+                }, 2000);
+            }
+
+            // 播放难过动画
+            playSadAnimation() {
+                const image = this.container.querySelector('.robot-image');
+                image.classList.add('sad-animation');
+                
+                setTimeout(() => {
+                    image.classList.remove('sad-animation');
+                }, 2000);
+            }
+
+            // 点头动画
+            playNodAnimation() {
+                const image = this.container.querySelector('.robot-image');
+                image.classList.add('nod-animation');
+                
+                setTimeout(() => {
+                    image.classList.remove('nod-animation');
+                }, 1000);
+            }
+
+            // 响应消息
+            respondToMessage(message, sender) {
+                if (sender === 'user') {
+                    // 分析用户消息情绪
+                    const positiveWords = ['谢谢', '很好', '帮助', '喜欢', '棒'];
+                    const negativeWords = ['错误', '不懂', '不会', '困难', '问题'];
+                    
+                    if (positiveWords.some(word => message.includes(word))) {
+                        this.reactPositive();
+                    } else if (negativeWords.some(word => message.includes(word))) {
+                        this.reactNegative();
+                    } else if (Math.random() > 0.7) {
+                        this.encourage();
+                    }
+                } else if (sender === 'ai') {
+                    // AI回复时点头
+                    this.playNodAnimation();
+                }
+            }
+        }
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            authModule.initialize();
+            
+            // 社区数据图表
+            const ctx = document.getElementById('communityChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['1月', '2月', '3月', '4月', '5月', '6月', '7月'],
+                    datasets: [{
+                        label: '活跃用户',
+                        data: [3200, 4200, 5100, 4800, 5500, 6200, 5800],
+                        borderColor: '#38BDF8',
+                        backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                        tension: 0.3,
+                        fill: true,
+                        pointBackgroundColor: '#6366F1',
+                        pointBorderColor: '#fff',
+                        pointHoverRadius: 6,
+                        pointHoverBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                }
+            });
+
+            // 标签切换效果
+            document.querySelectorAll('.tag-hover').forEach(tag => {
+                tag.addEventListener('click', function() {
+                    document.querySelector('.active-tab').classList.remove('active-tab');
+                    this.classList.add('active-tab');
+                });
+            });
+
+            // 虚拟场景点击效果
+            document.querySelectorAll('.scene-preview').forEach(scene => {
+                scene.addEventListener('click', function() {
+                    // 这里可以添加场景切换逻辑
+                    console.log('切换到场景:', this.querySelector('h3').textContent);
+                });
+            });
+            
+            // 初始化机械人助手 - 社区版
+            const robotAssistant = new CommunityRobotAssistant('robot-assistant-container');
+            
+            // 显示欢迎消息
+            setTimeout(() => {
+                robotAssistant.showRandomMessage(3000);
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

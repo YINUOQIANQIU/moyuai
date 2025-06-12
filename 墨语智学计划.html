@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>墨语智学 - 学习计划</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2962FF',
+                        secondary: '#1A237E',
+                        success: '#4CAF50',
+                        error: '#F44336'
+                    },
+                    borderRadius: {
+                        'none': '0px',
+                        'sm': '2px',
+                        DEFAULT: '4px',
+                        'md': '8px',
+                        'lg': '12px',
+                        'xl': '16px',
+                        '2xl': '20px',
+                        '3xl': '24px',
+                        'full': '9999px',
+                        'button': '4px'
+                    },
+                    fontFamily: {
+                        'sans': ['Poppins', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            min-height: 1024px;
+            font-family: 'Poppins', sans-serif;
+            background-color: #F5F7FF;
+        }
+        .glass-effect {
+            backdrop-filter: blur(8px);
+            background-color: rgba(255, 255, 255, 0.95);
+        }
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(41, 98, 255, 0.1);
+        }
+        .dropdown-enter {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        .dropdown-enter-active {
+            opacity: 1;
+            transform: translateY(0);
+            transition: all 0.2s ease;
+        }
+        .dropdown-exit {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .dropdown-exit-active {
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.2s ease;
+        }
+        .nav-item {
+            transition: color 0.2s ease;
+        }
+        .nav-item:hover {
+            color: #2962FF;
+        }
+        .active-nav {
+            color: #2962FF;
+            border-bottom: 2px solid #2962FF;
+        }
+        
+        /* 机械人助手样式 - 修改为趴在边栏上的样式 */
+        #robot-assistant-container {
+            position: fixed;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 60px;
+            height: 120px;
+            z-index: 1000;
+            pointer-events: auto;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+        
+        .robot-image-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .robot-image {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            border-radius: 50% 0 0 50%;
+            box-shadow: -4px 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            border: 2px solid white;
+            position: absolute;
+            right: 0;
+        }
+        
+        /* 消息气泡 - 调整位置 */
+        .robot-message {
+            position: absolute;
+            right: 90px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: white;
+            padding: 12px 16px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 240px;
+            font-size: 14px;
+            line-height: 1.4;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .robot-message:after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: -8px;
+            transform: translateY(-50%);
+            border-width: 8px;
+            border-style: solid;
+            border-color: transparent transparent transparent white;
+        }
+        
+        /* 动画效果 */
+        .talk-animation {
+            animation: talk 0.5s infinite alternate;
+        }
+        
+        .happy-animation {
+            animation: happy 1s ease;
+        }
+        
+        .sad-animation {
+            animation: sad 1s ease;
+        }
+        
+        .nod-animation {
+            animation: nod 0.5s ease;
+        }
+        
+        @keyframes talk {
+            0% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-3px) scale(1.05); }
+            100% { transform: translateY(0) scale(1); }
+        }
+        
+        @keyframes happy {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(10deg); }
+            50% { transform: rotate(-10deg); }
+            75% { transform: rotate(5deg); }
+        }
+        
+        @keyframes sad {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(5px); }
+        }
+        
+        @keyframes nod {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 (与首页一致) -->
+    <nav class="flex items-center justify-between px-6 lg:px-12 h-16 bg-white/90 backdrop-blur-md fixed top-0 left-0 right-0 z-50 border-b border-blue-50">
+        <div class="flex items-center gap-8 lg:gap-16">
+            <a href="墨语智学首页.html" class="flex items-center gap-3">
+                <span class="text-primary text-2xl font-bold tracking-tight">墨语智学</span>
+            </a>
+            <div class="hidden lg:flex items-center gap-8">
+                <a href="墨语智学计划.html" class="text-gray-700 hover:text-primary transition-colors font-medium">备考规划</a>
+                <a href="#" class="text-gray-700 hover:text-primary transition-colors font-medium">在线教学</a>
+                <a href="墨语智学真题.html" class="text-gray-700 hover:text-primary transition-colors font-medium">真题练习</a>
+                <a href="墨语智学社区.html" class="text-gray-700 hover:text-primary transition-colors font-medium">学习社区</a>
+            </div>
+        </div>
+        
+        <!-- 动态登录/用户区域 -->
+        <div class="flex items-center gap-4 lg:gap-6" id="auth-section">
+            <div id="login-btn-container">
+                <a href="墨语智学登录.html" class="flex items-center px-4 lg:px-6 py-2 bg-blue-50 text-primary rounded-button hover:bg-blue-100 transition-colors">
+                    <span class="whitespace-nowrap font-medium text-sm lg:text-base">登录</span>
+                </a>
+            </div>
+            <a href="墨语智学聊天.html" class="flex items-center px-4 lg:px-6 py-2 bg-primary text-white rounded-button hover:bg-secondary transition-colors">
+                <span class="whitespace-nowrap font-medium text-sm lg:text-base">免费试用</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- 主内容区域 -->
+    <main class="pt-24 pb-16 max-w-[1440px] mx-auto px-6">
+        <!-- 页面标题和操作按钮 -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+            <h1 class="text-2xl lg:text-3xl font-bold text-secondary mb-4 md:mb-0">我的学习计划</h1>
+            <div class="flex gap-3">
+                <button onclick="showCreatePlanModal()" class="flex items-center gap-2 px-4 lg:px-6 py-2 bg-primary text-white rounded-button hover:bg-secondary transition-colors">
+                    <i class="fas fa-plus"></i>
+                    <span>创建新计划</span>
+                </button>
+                <button class="flex items-center gap-2 px-4 lg:px-6 py-2 bg-white text-gray-700 border border-gray-300 rounded-button hover:bg-gray-50 transition-colors">
+                    <i class="fas fa-filter"></i>
+                    <span>筛选</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 计划分类导航 -->
+        <div class="flex items-center gap-6 border-b border-gray-200 mb-8">
+            <button id="all-plans-tab" class="pb-3 px-1 font-medium text-sm lg:text-base border-b-2 border-primary text-primary">全部计划</button>
+            <button id="ai-plans-tab" class="pb-3 px-1 font-medium text-sm lg:text-base text-gray-600 hover:text-primary transition-colors">AI生成</button>
+            <button id="custom-plans-tab" class="pb-3 px-1 font-medium text-sm lg:text-base text-gray-600 hover:text-primary transition-colors">自定义</button>
+            <button id="completed-plans-tab" class="pb-3 px-1 font-medium text-sm lg:text-base text-gray-600 hover:text-primary transition-colors">已完成</button>
+        </div>
+
+        <!-- 计划列表 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12" id="plans-container">
+            <!-- 计划卡片将通过JavaScript动态加载 -->
+        </div>
+
+        <!-- 学习统计 -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-12">
+            <h2 class="text-xl lg:text-2xl font-bold text-secondary mb-6">学习统计</h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- 学习进度统计 -->
+                <div class="bg-blue-50 rounded-lg p-6">
+                    <h3 class="text-lg font-semibold text-secondary mb-4">学习进度</h3>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-3xl font-bold text-secondary mb-2">65%</p>
+                            <p class="text-gray-600">平均完成率</p>
+                        </div>
+                        <div class="relative w-20 h-20">
+                            <svg class="progress-ring" width="80" height="80">
+                                <circle stroke="#E0E0E0" stroke-width="8" fill="transparent" r="36" cx="40" cy="40"/>
+                                <circle stroke="#2962FF" stroke-width="8" fill="transparent" r="36" cx="40" cy="40" stroke-dasharray="226.2" stroke-dashoffset="79.17"/>
+                            </svg>
+                            <div class="absolute inset-0 flex items-center justify-center text-lg font-bold">
+                                65%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 计划分布统计 -->
+                <div class="bg-blue-50 rounded-lg p-6">
+                    <h3 class="text-lg font-semibold text-secondary mb-4">计划分布</h3>
+                    <div class="h-40">
+                        <canvas id="plans-distribution-chart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- 学习时间统计 -->
+                <div class="bg-blue-50 rounded-lg p-6">
+                    <h3 class="text-lg font-semibold text-secondary mb-4">学习时间</h3>
+                    <div class="h-40">
+                        <canvas id="study-time-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 近期任务 -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl lg:text-2xl font-bold text-secondary">近期任务</h2>
+                <a href="#" class="text-primary hover:text-secondary transition-colors flex items-center gap-2">
+                    <span>查看全部</span>
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+            
+            <div class="space-y-4" id="recent-tasks">
+                <!-- 任务项将通过JavaScript动态加载 -->
+            </div>
+        </div>
+    </main>
+
+    <!-- 创建计划模态框 -->
+    <div id="create-plan-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-secondary">创建新学习计划</h3>
+                <button onclick="hideCreatePlanModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="new-plan-form" class="space-y-6">
+                <div>
+                    <label for="plan-title" class="block text-sm font-medium text-gray-700 mb-2">计划标题</label>
+                    <input type="text" id="plan-title" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" placeholder="例如：CET-6词汇突破计划" required>
+                </div>
+                
+                <div>
+                    <label for="plan-type" class="block text-sm font-medium text-gray-700 mb-2">计划类型</label>
+                    <select id="plan-type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" required>
+                        <option value="">选择计划类型</option>
+                        <option value="vocabulary">词汇记忆</option>
+                        <option value="listening">听力训练</option>
+                        <option value="reading">阅读理解</option>
+                        <option value="writing">写作提升</option>
+                        <option value="translation">翻译练习</option>
+                        <option value="comprehensive">综合提升</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="plan-duration" class="block text-sm font-medium text-gray-700 mb-2">计划时长</label>
+                    <div class="flex items-center gap-4">
+                        <input type="number" id="plan-duration" min="1" max="365" class="w-24 px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" placeholder="例如：30" required>
+                        <select id="duration-unit" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary">
+                            <option value="days">天</option>
+                            <option value="weeks">周</option>
+                            <option value="months">月</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div>
+                    <label for="plan-description" class="block text-sm font-medium text-gray-700 mb-2">计划描述</label>
+                    <textarea id="plan-description" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" placeholder="详细描述你的学习目标和计划内容"></textarea>
+                </div>
+                
+                <div class="flex justify-end gap-4 pt-4">
+                    <button type="button" onclick="hideCreatePlanModal()" class="px-6 py-2 bg-white text-gray-700 border border-gray-300 rounded-button hover:bg-gray-50 transition-colors">
+                        取消
+                    </button>
+                    <button type="submit" class="px-6 py-2 bg-gradient-to-r from-primary to-secondary text-white rounded-button hover:opacity-90 transition-colors">
+                        创建计划
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 机械人助手容器 - 修改为趴在边栏上的样式 -->
+    <div id="robot-assistant-container">
+        <div class="robot-image-container">
+            <img src="https://imgur.la/images/2025/06/08/AB9D66DF1072932D11D8D306BE46693C.jpg" alt="小助手" class="robot-image">
+        </div>
+        <div class="robot-message"></div>
+    </div>
+
+    <script>
+        // 内嵌的auth模块
+        const authModule = (function() {
+            // 用户数据存储键名
+            const USER_STORAGE_KEY = 'moyu_user';
+            
+            // DOM元素ID常量
+            const AUTH_SECTION_ID = 'auth-section';
+            const LOGIN_BTN_CONTAINER_ID = 'login-btn-container';
+            
+            // 当前用户数据
+            let currentUser = null;
+            
+            // 初始化函数 - 在所有页面加载时调用
+            function initialize() {
+                // 从本地存储加载用户数据
+                loadUserData();
+                
+                // 更新UI
+                updateAuthUI();
+            }
+            
+            // 加载用户数据
+            function loadUserData() {
+                const userData = localStorage.getItem(USER_STORAGE_KEY);
+                if (userData) {
+                    currentUser = JSON.parse(userData);
+                }
+            }
+            
+            // 保存用户数据
+            function saveUserData(user) {
+                localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+                currentUser = user;
+            }
+            
+            // 清除用户数据
+            function clearUserData() {
+                localStorage.removeItem(USER_STORAGE_KEY);
+                currentUser = null;
+            }
+            
+            // 处理登录
+            function handleLogin(userData) {
+                saveUserData(userData);
+                updateAuthUI();
+            }
+            
+            // 处理登出
+            function handleLogout() {
+                clearUserData();
+                updateAuthUI();
+            }
+            
+            // 检查登录状态
+            function isLoggedIn() {
+                return currentUser !== null;
+            }
+            
+            // 获取当前用户
+            function getCurrentUser() {
+                return currentUser;
+            }
+            
+            // 更新认证UI
+            function updateAuthUI() {
+                const authSection = document.getElementById(AUTH_SECTION_ID);
+                const loginBtnContainer = document.getElementById(LOGIN_BTN_CONTAINER_ID);
+                
+                if (!loginBtnContainer) return;
+                
+                // 清除现有内容
+                loginBtnContainer.innerHTML = '';
+                
+                if (isLoggedIn()) {
+                    // 创建用户头像和下拉菜单
+                    createUserDropdown(loginBtnContainer);
+                } else {
+                    // 创建登录按钮
+                    createLoginButton(loginBtnContainer);
+                }
+            }
+            
+            // 创建登录按钮
+            function createLoginButton(container) {
+                const loginBtn = document.createElement('a');
+                loginBtn.href = '墨语智学登录.html';
+                loginBtn.className = 'flex items-center px-4 lg:px-6 py-2 bg-blue-50 text-primary rounded-button hover:bg-blue-100 transition-colors';
+                loginBtn.innerHTML = '<span class="whitespace-nowrap font-medium text-sm lg:text-base">登录</span>';
+                
+                container.appendChild(loginBtn);
+            }
+            
+            // 创建用户下拉菜单
+            function createUserDropdown(container) {
+                // 用户头像按钮
+                const avatarBtn = document.createElement('div');
+                avatarBtn.className = 'relative group';
+                avatarBtn.id = 'user-dropdown';
+                
+                // 头像图片
+                const avatarImg = document.createElement('img');
+                avatarImg.src = currentUser.avatar || 'https://imgur.la/images/2025/06/07/94B2FFC12D41C799B69B2668BBA16BE7.jpg';
+                avatarImg.alt = currentUser.name || '用户';
+                avatarImg.className = 'w-8 h-8 rounded-full cursor-pointer object-cover';
+                avatarImg.style.minWidth = '32px';
+                
+                // 下拉菜单
+                const dropdownMenu = document.createElement('div');
+                dropdownMenu.className = 'absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 origin-top-right transform transition-all duration-200 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100';
+                dropdownMenu.style.transformOrigin = 'top right';
+                
+                dropdownMenu.innerHTML = `
+                    <div class="py-1" role="menu" aria-orientation="vertical">
+                        <div class="px-4 py-2 border-b border-gray-100">
+                            <p class="text-sm font-medium text-gray-900">${currentUser.name || '用户'}</p>
+                            <p class="text-xs text-gray-500">${currentUser.username || ''}</p>
+                        </div>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-primary transition-colors" role="menuitem">
+                            <i class="fas fa-user mr-2"></i>个人中心
+                        </a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-primary transition-colors" role="menuitem">
+                            <i class="fas fa-cog mr-2"></i>设置
+                        </a>
+                        <a href="#" id="logout-btn" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-primary transition-colors" role="menuitem">
+                            <i class="fas fa-sign-out-alt mr-2"></i>退出登录
+                        </a>
+                    </div>
+                `;
+                
+                avatarBtn.appendChild(avatarImg);
+                avatarBtn.appendChild(dropdownMenu);
+                container.appendChild(avatarBtn);
+                
+                // 添加登出按钮事件
+                const logoutBtn = dropdownMenu.querySelector('#logout-btn');
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        handleLogout();
+                    });
+                }
+                
+                // 点击外部关闭菜单
+                document.addEventListener('click', function(e) {
+                    if (!avatarBtn.contains(e.target)) {
+                        dropdownMenu.classList.remove('opacity-100', 'scale-100');
+                        dropdownMenu.classList.add('opacity-0', 'scale-95');
+                    }
+                });
+            }
+            
+            // 公共API
+            return {
+                initialize,
+                handleLogin,
+                handleLogout,
+                isLoggedIn,
+                getCurrentUser
+            };
+        })();
+
+        // 可爱的机械人助手类
+        class CuteRobotAssistant {
+            constructor(containerId) {
+                this.container = document.getElementById(containerId);
+                if (!this.container) return;
+
+                // 创建机械人元素 - 使用图片
+                this.container.innerHTML = `
+                    <div class="robot-image-container">
+                        <img src="https://imgur.la/images/2025/06/08/AB9D66DF1072932D11D8D306BE46693C.jpg" alt="小助手" class="robot-image">
+                    </div>
+                    <div class="robot-message"></div>
+                `;
+
+                // 配置
+                this.config = {
+                    position: 'right-middle',
+                    reactions: {
+                        positive: true,
+                        negative: true,
+                        encouragement: true
+                    },
+                    messages: [
+                        "需要帮助制定学习计划吗？",
+                        "点击我可以获得计划建议哦~",
+                        "我在这里帮你管理学习计划！",
+                        "有什么计划问题尽管问我吧！",
+                        "你的计划进度很不错，继续加油！",
+                        "想了解如何提高计划完成率吗？",
+                        "需要AI帮你生成学习计划吗？",
+                        "计划完成度越高，效果越好哦！"
+                    ]
+                };
+
+                // 设置初始位置
+                this.setPosition(this.config.position);
+                
+                // 添加点击事件
+                this.container.addEventListener('click', () => {
+                    this.showRandomMessage(4000);
+                    this.startTalkingAnimation();
+                });
+
+                // 初始动画
+                this.playHappyAnimation();
+            }
+
+            // 设置位置
+            setPosition(position) {
+                const positions = {
+                    'right-bottom': { 
+                        right: '24px',
+                        bottom: '24px'
+                    },
+                    'right-middle': {
+                        right: '0',
+                        top: '50%',
+                        transform: 'translateY(-50%)'
+                    },
+                    'bottom-right': { right: '20px', bottom: '20px' },
+                    'bottom-left': { left: '20px', bottom: '20px' },
+                    'top-right': { right: '20px', top: '20px' },
+                    'top-left': { left: '20px', top: '20px' }
+                };
+                
+                if (positions[position]) {
+                    Object.assign(this.container.style, {
+                        position: 'fixed',
+                        ...positions[position],
+                        zIndex: '1000',
+                        pointerEvents: 'auto'
+                    });
+                    this.config.position = position;
+                }
+            }
+
+            // 显示随机消息
+            showRandomMessage(duration = 3000) {
+                const randomIndex = Math.floor(Math.random() * this.config.messages.length);
+                this.showMessage(this.config.messages[randomIndex], duration);
+            }
+
+            // 显示消息
+            showMessage(message, duration = 3000) {
+                // 创建或获取消息元素
+                if (!this.messageElement) {
+                    this.messageElement = this.container.querySelector('.robot-message');
+                }
+                
+                this.messageElement.textContent = message;
+                this.messageElement.style.display = 'block';
+                
+                // 添加动画效果
+                this.startTalkingAnimation();
+                
+                if (duration > 0) {
+                    setTimeout(() => {
+                        this.hideMessage();
+                        this.stopTalkingAnimation();
+                    }, duration);
+                }
+            }
+
+            hideMessage() {
+                if (this.messageElement) {
+                    this.messageElement.style.display = 'none';
+                }
+            }
+
+            // 开始说话动画
+            startTalkingAnimation() {
+                const image = this.container.querySelector('.robot-image');
+                image.classList.add('talk-animation');
+            }
+
+            // 停止说话动画
+            stopTalkingAnimation() {
+                const image = this.container.querySelector('.robot-image');
+                image.classList.remove('talk-animation');
+            }
+
+            // 响应正面反馈
+            reactPositive() {
+                if (this.config.reactions.positive) {
+                    this.showMessage('做得很好！继续保持！', 2000);
+                    this.playHappyAnimation();
+                }
+            }
+
+            // 响应负面反馈
+            reactNegative() {
+                if (this.config.reactions.negative) {
+                    this.showMessage('别灰心，继续努力！', 2000);
+                    this.playSadAnimation();
+                }
+            }
+
+            // 鼓励用户
+            encourage() {
+                if (this.config.reactions.encouragement) {
+                    this.showMessage('你可以的！加油！', 2000);
+                    this.playHappyAnimation();
+                }
+            }
+
+            // 播放开心动画
+            playHappyAnimation() {
+                const image = this.container.querySelector('.robot-image');
+                image.classList.add('happy-animation');
+                
+                setTimeout(() => {
+                    image.classList.remove('happy-animation');
+                }, 2000);
+            }
+
+            // 播放难过动画
+            playSadAnimation() {
+                const image = this.container.querySelector('.robot-image');
+                image.classList.add('sad-animation');
+                
+                setTimeout(() => {
+                    image.classList.remove('sad-animation');
+                }, 2000);
+            }
+
+            // 点头动画
+            playNodAnimation() {
+                const image = this.container.querySelector('.robot-image');
+                image.classList.add('nod-animation');
+                
+                setTimeout(() => {
+                    image.classList.remove('nod-animation');
+                }, 1000);
+            }
+
+            // 响应消息
+            respondToMessage(message, sender) {
+                if (sender === 'user') {
+                    // 分析用户消息情绪
+                    const positiveWords = ['谢谢', '很好', '帮助', '喜欢', '棒'];
+                    const negativeWords = ['错误', '不懂', '不会', '困难', '问题'];
+                    
+                    if (positiveWords.some(word => message.includes(word))) {
+                        this.reactPositive();
+                    } else if (negativeWords.some(word => message.includes(word))) {
+                        this.reactNegative();
+                    } else if (Math.random() > 0.7) {
+                        this.encourage();
+                    }
+                } else if (sender === 'ai') {
+                    // AI回复时点头
+                    this.playNodAnimation();
+                }
+            }
+        }
+
+        // 用户数据
+        const currentUser = {
+            id: 1,
+            username: 'student2025',
+            name: '王梦琪',
+            avatar: 'https://imgur.la/images/2025/06/07/94B2FFC12D41C799B69B2668BBA16BE7.jpg'
+        };
+
+        // 计划数据
+        const plansData = [
+            {
+                id: 1,
+                title: "CET-6 词汇突破计划",
+                type: "vocabulary",
+                source: "ai",
+                progress: 75,
+                duration: 30,
+                durationUnit: "days",
+                description: "掌握核心词汇2500个，提高阅读理解和写作能力",
+                createdAt: "2023-10-15",
+                tasks: [
+                    { id: 1, title: "背诵50个高频词汇", completed: true },
+                    { id: 2, title: "完成词汇测试1", completed: true },
+                    { id: 3, title: "复习前50个词汇", completed: false },
+                    { id: 4, title: "学习同义词辨析", completed: false }
+                ]
+            },
+            {
+                id: 2,
+                title: "四级听力强化训练",
+                type: "listening",
+                source: "ai",
+                progress: 45,
+                duration: 21,
+                durationUnit: "days",
+                description: "提升听力理解能力，掌握各类题型答题技巧",
+                createdAt: "2023-11-02",
+                tasks: [
+                    { id: 1, title: "完成短对话练习", completed: true },
+                    { id: 2, title: "听写训练1", completed: true },
+                    { id: 3, title: "长对话专项练习", completed: false },
+                    { id: 4, title: "模拟测试1", completed: false }
+                ]
+            },
+            {
+                id: 3,
+                title: "英语写作提升计划",
+                type: "writing",
+                source: "custom",
+                progress: 30,
+                duration: 8,
+                durationUnit: "weeks",
+                description: "系统学习各类写作题型，提升写作表达能力",
+                createdAt: "2023-11-10",
+                tasks: [
+                    { id: 1, title: "学习议论文结构", completed: true },
+                    { id: 2, title: "完成一篇议论文", completed: false },
+                    { id: 3, title: "学习图表作文", completed: false }
+                ]
+            },
+            {
+                id: 4,
+                title: "阅读理解技巧训练",
+                type: "reading",
+                source: "ai",
+                progress: 90,
+                duration: 14,
+                durationUnit: "days",
+                description: "掌握快速阅读技巧，提高答题准确率",
+                createdAt: "2023-09-20",
+                tasks: [
+                    { id: 1, title: "学习略读技巧", completed: true },
+                    { id: 2, title: "完成3篇阅读练习", completed: true },
+                    { id: 3, title: "错题分析", completed: true },
+                    { id: 4, title: "模拟测试", completed: false }
+                ]
+            },
+            {
+                id: 5,
+                title: "翻译专项训练",
+                type: "translation",
+                source: "custom",
+                progress: 20,
+                duration: 4,
+                durationUnit: "weeks",
+                description: "提升中英互译能力，掌握常见翻译技巧",
+                createdAt: "2023-11-15",
+                tasks: [
+                    { id: 1, title: "学习基本翻译技巧", completed: true },
+                    { id: 2, title: "完成5个句子翻译", completed: false }
+                ]
+            }
+        ];
+
+        // DOM元素
+        const plansContainer = document.getElementById('plans-container');
+        const recentTasksContainer = document.getElementById('recent-tasks');
+        const createPlanModal = document.getElementById('create-plan-modal');
+        const newPlanForm = document.getElementById('new-plan-form');
+        const loginBtnContainer = document.getElementById('login-btn-container');
+        const authSection = document.getElementById('auth-section');
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化auth模块
+            authModule.initialize();
+            
+            // 加载计划数据
+            renderPlans('all');
+            renderRecentTasks();
+            initCharts();
+            
+            // 设置标签页切换事件
+            document.getElementById('all-plans-tab').addEventListener('click', () => renderPlans('all'));
+            document.getElementById('ai-plans-tab').addEventListener('click', () => renderPlans('ai'));
+            document.getElementById('custom-plans-tab').addEventListener('click', () => renderPlans('custom'));
+            document.getElementById('completed-plans-tab').addEventListener('click', () => renderPlans('completed'));
+            
+            // 表单提交事件
+            newPlanForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                createNewPlan();
+            });
+            
+            // 初始化机械人助手
+            const robotAssistant = new CuteRobotAssistant('robot-assistant-container');
+            
+            // 显示欢迎消息
+            setTimeout(() => {
+                robotAssistant.showRandomMessage(3000);
+            }, 2000);
+        });
+
+        // 渲染计划列表
+        function renderPlans(filter) {
+            plansContainer.innerHTML = '';
+            
+            const filteredPlans = plansData.filter(plan => {
+                if (filter === 'all') return true;
+                if (filter === 'ai') return plan.source === 'ai';
+                if (filter === 'custom') return plan.source === 'custom';
+                if (filter === 'completed') return plan.progress === 100;
+                return true;
+            });
+            
+            if (filteredPlans.length === 0) {
+                plansContainer.innerHTML = `
+                    <div class="col-span-3 py-12 text-center">
+                        <i class="fas fa-clipboard-list text-4xl text-gray-300 mb-4"></i>
+                        <p class="text-gray-500">暂无学习计划</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            filteredPlans.forEach(plan => {
+                const planCard = document.createElement('div');
+                planCard.className = 'bg-white rounded-lg shadow-sm card-hover overflow-hidden';
+                
+                // 计划类型颜色
+                let typeColor = 'blue';
+                let typeIcon = 'fa-book';
+                
+                switch(plan.type) {
+                    case 'vocabulary':
+                        typeColor = 'blue';
+                        typeIcon = 'fa-book';
+                        break;
+                    case 'listening':
+                        typeColor = 'purple';
+                        typeIcon = 'fa-headphones';
+                        break;
+                    case 'reading':
+                        typeColor = 'green';
+                        typeIcon = 'fa-search';
+                        break;
+                    case 'writing':
+                        typeColor = 'yellow';
+                        typeIcon = 'fa-pen';
+                        break;
+                    case 'translation':
+                        typeColor = 'red';
+                        typeIcon = 'fa-language';
+                        break;
+                    default:
+                        typeColor = 'blue';
+                        typeIcon = 'fa-book';
+                }
+                
+                // 进度环计算
+                const circumference = 2 * Math.PI * 36;
+                const offset = circumference - (plan.progress / 100) * circumference;
+                
+                planCard.innerHTML = `
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="px-2 py-1 rounded-full text-xs bg-${typeColor}-100 text-${typeColor}-600">
+                                        <i class="fas ${typeIcon} mr-1"></i>
+                                        ${getTypeName(plan.type)}
+                                    </span>
+                                    ${plan.source === 'ai' ? '<span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">AI生成</span>' : ''}
+                                </div>
+                                <h3 class="text-lg font-semibold text-secondary mb-2">${plan.title}</h3>
+                                <p class="text-gray-600 text-sm mb-4">${plan.description}</p>
+                            </div>
+                            <div class="relative w-16 h-16">
+                                <svg class="progress-ring" width="64" height="64">
+                                    <circle stroke="#E0E0E0" stroke-width="4" fill="transparent" r="28" cx="32" cy="32"/>
+                                    <circle stroke="#2962FF" stroke-width="4" fill="transparent" r="28" cx="32" cy="32" 
+                                            stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"/>
+                                </svg>
+                                <div class="absolute inset-0 flex items-center justify-center text-sm font-medium">
+                                    ${plan.progress}%
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center text-sm text-gray-500">
+                            <span><i class="far fa-calendar-alt mr-1"></i>${plan.duration} ${getDurationUnitName(plan.durationUnit)}</span>
+                            <span><i class="far fa-clock mr-1"></i>${plan.createdAt}</span>
+                        </div>
+                    </div>
+                    <div class="border-t border-gray-200 px-6 py-3 bg-gray-50 flex justify-between items-center">
+                        <a href="墨语智学计划详情.html?id=${plan.id}" class="text-primary hover:text-secondary text-sm font-medium">
+                            查看详情 <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                        <div class="flex gap-2">
+                            <button class="w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-200">
+                                <i class="fas fa-ellipsis-h"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                plansContainer.appendChild(planCard);
+            });
+        }
+
+        // 渲染近期任务
+        function renderRecentTasks() {
+            recentTasksContainer.innerHTML = '';
+            
+            // 获取所有未完成任务并按创建日期排序
+            const allTasks = [];
+            plansData.forEach(plan => {
+                plan.tasks.forEach(task => {
+                    if (!task.completed) {
+                        allTasks.push({
+                            ...task,
+                            planTitle: plan.title,
+                            planId: plan.id
+                        });
+                    }
+                });
+            });
+            
+            // 只显示最近的5个任务
+            const recentTasks = allTasks.slice(0, 5);
+            
+            if (recentTasks.length === 0) {
+                recentTasksContainer.innerHTML = `
+                    <div class="text-center py-6 text-gray-500">
+                        <i class="fas fa-check-circle text-3xl text-gray-300 mb-2"></i>
+                        <p>暂无待办任务</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            recentTasks.forEach(task => {
+                const taskItem = document.createElement('div');
+                taskItem.className = 'flex items-center justify-between p-4 bg-gray-50 rounded-lg';
+                
+                taskItem.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <input type="checkbox" class="w-5 h-5 text-primary rounded border-gray-300 focus:ring-primary">
+                        <div>
+                            <p class="text-sm font-medium text-gray-800">${task.title}</p>
+                            <p class="text-xs text-gray-500">来自: ${task.planTitle}</p>
+                        </div>
+                    </div>
+                    <a href="墨语智学计划详情.html?id=${task.planId}" class="text-primary hover:text-secondary text-sm">
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                `;
+                
+                // 添加任务完成事件
+                const checkbox = taskItem.querySelector('input[type="checkbox"]');
+                checkbox.addEventListener('change', function() {
+                    if (this.checked) {
+                        // 在实际应用中，这里应该更新任务状态
+                        taskItem.classList.add('opacity-60');
+                        taskItem.querySelector('p').classList.add('line-through');
+                    }
+                });
+                
+                recentTasksContainer.appendChild(taskItem);
+            });
+        }
+
+        // 初始化图表
+        function initCharts() {
+            // 计划分布图表
+            const plansDistributionCtx = document.getElementById('plans-distribution-chart').getContext('2d');
+            new Chart(plansDistributionCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['词汇记忆', '听力训练', '阅读理解', '写作提升', '翻译练习'],
+                    datasets: [{
+                        data: [3, 2, 1, 1, 1],
+                        backgroundColor: [
+                            '#2962FF',
+                            '#7E57C2',
+                            '#4CAF50',
+                            '#FFC107',
+                            '#F44336'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                boxWidth: 12,
+                                padding: 20
+                            }
+                        }
+                    },
+                    cutout: '70%'
+                }
+            });
+            
+            // 学习时间图表
+            const studyTimeCtx = document.getElementById('study-time-chart').getContext('2d');
+            new Chart(studyTimeCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+                    datasets: [{
+                        label: '学习时间(小时)',
+                        data: [2, 3, 1.5, 2.5, 3, 4, 2],
+                        backgroundColor: '#2962FF',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                display: false
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    }
+
+    // 显示创建计划模态框
+    function showCreatePlanModal() {
+        createPlanModal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    // 隐藏创建计划模态框
+    function hideCreatePlanModal() {
+        createPlanModal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+        newPlanForm.reset();
+    }
+
+    // 创建新计划
+    function createNewPlan() {
+        const title = document.getElementById('plan-title').value;
+        const type = document.getElementById('plan-type').value;
+        const duration = document.getElementById('plan-duration').value;
+        const durationUnit = document.getElementById('duration-unit').value;
+        const description = document.getElementById('plan-description').value;
+        
+        // 在实际应用中，这里应该将新计划保存到服务器
+        const newPlan = {
+            id: plansData.length + 1,
+            title: title,
+            type: type,
+            source: 'custom',
+            progress: 0,
+            duration: parseInt(duration),
+            durationUnit: durationUnit,
+            description: description,
+            createdAt: new Date().toISOString().split('T')[0],
+            tasks: []
+        };
+        
+        plansData.unshift(newPlan);
+        renderPlans('all');
+        hideCreatePlanModal();
+        
+        // 显示成功提示
+        alert('学习计划创建成功！');
+    }
+
+    // 辅助函数：获取计划类型名称
+    function getTypeName(type) {
+        const typeNames = {
+            'vocabulary': '词汇记忆',
+            'listening': '听力训练',
+            'reading': '阅读理解',
+            'writing': '写作提升',
+            'translation': '翻译练习',
+            'comprehensive': '综合提升'
+        };
+        return typeNames[type] || '学习计划';
+    }
+
+    // 辅助函数：获取时长单位名称
+    function getDurationUnitName(unit) {
+        const unitNames = {
+            'days': '天',
+            'weeks': '周',
+            'months': '月'
+        };
+        return unitNames[unit] || '天';
+    }
+</script>
+</body>
+</html>

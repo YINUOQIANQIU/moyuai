@@ -1,0 +1,1581 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>墨语智学 - 四六级真题库</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Add Chart.js for pie chart -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2962FF',
+                        secondary: '#1A237E'
+                    },
+                    borderRadius: {
+                        'none': '0px',
+                        'sm': '2px',
+                        DEFAULT: '4px',
+                        'md': '8px',
+                        'lg': '12px',
+                        'xl': '16px',
+                        '2xl': '20px',
+                        '3xl': '24px',
+                        'full': '9999px',
+                        'button': '4px'
+                    },
+                    fontFamily: {
+                        'sans': ['Poppins', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #F8FAFC;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #F0F7FF 0%, #E3F2FF 100%);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(41, 98, 255, 0.1);
+        }
+        .sidebar-item {
+            transition: all 0.2s ease;
+        }
+        .sidebar-item:hover {
+            background-color: #E3F2FF;
+        }
+        .sidebar-item.active {
+            background-color: #E3F2FF;
+            border-left: 4px solid #2962FF;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .tab-button {
+            transition: all 0.2s ease;
+        }
+        .tab-button.active {
+            background-color: #2962FF;
+            color: white;
+        }
+        .submit-button {
+            width: 100%;
+            margin-top: 5mm;
+            padding: 12px 0;
+            font-size: 1rem;
+        }
+        .pie-chart-container {
+            display: none;
+            margin-top: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .time-warning {
+            color: #EF4444;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        .dropdown-enter {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        .dropdown-enter-active {
+            opacity: 1;
+            transform: translateY(0);
+            transition: all 0.2s ease;
+        }
+        .dropdown-exit {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .dropdown-exit-active {
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.2s ease;
+        }
+        .progress-item {
+            position: relative;
+        }
+        .progress-item.completed .progress-dot {
+            background-color: #10B981;
+            border-color: #10B981;
+        }
+        .progress-item.current .progress-dot {
+            background-color: #2962FF;
+            border-color: #2962FF;
+            box-shadow: 0 0 0 3px rgba(41, 98, 255, 0.2);
+        }
+        .progress-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid #E5E7EB;
+            background-color: white;
+            position: relative;
+            z-index: 2;
+        }
+        .progress-line {
+            position: absolute;
+            top: 7px;
+            left: 0;
+            height: 2px;
+            width: 100%;
+            background-color: #E5E7EB;
+            z-index: 1;
+        }
+        .progress-line-fill {
+            height: 100%;
+            background-color: #10B981;
+            transition: width 0.3s ease;
+        }
+        [contenteditable="true"]:empty:before {
+            content: attr(placeholder);
+            color: #9CA3AF;
+        }
+        
+        /* 机械人助手样式 - 修改为趴在边栏上的样式 */
+        #robot-assistant-container {
+            position: fixed;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 60px;
+            height: 120px;
+            z-index: 1000;
+            pointer-events: auto;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+        
+        .robot-image-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .robot-image {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            border-radius: 50% 0 0 50%;
+            box-shadow: -4px 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            border: 2px solid white;
+            position: absolute;
+            right: 0;
+        }
+        
+        /* 消息气泡 - 调整位置 */
+        .robot-message {
+            position: absolute;
+            right: 90px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: white;
+            padding: 12px 16px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 240px;
+            font-size: 14px;
+            line-height: 1.4;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .robot-message:after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: -8px;
+            transform: translateY(-50%);
+            border-width: 8px;
+            border-style: solid;
+            border-color: transparent transparent transparent white;
+        }
+        
+        /* 动画效果 */
+        .talk-animation {
+            animation: talk 0.5s infinite alternate;
+        }
+        
+        .happy-animation {
+            animation: happy 1s ease;
+        }
+        
+        .sad-animation {
+            animation: sad 1s ease;
+        }
+        
+        .nod-animation {
+            animation: nod 0.5s ease;
+        }
+        
+        @keyframes talk {
+            0% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-3px) scale(1.05); }
+            100% { transform: translateY(0) scale(1); }
+        }
+        
+        @keyframes happy {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(10deg); }
+            50% { transform: rotate(-10deg); }
+            75% { transform: rotate(5deg); }
+        }
+        
+        @keyframes sad {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(5px); }
+        }
+        
+        @keyframes nod {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+<!-- 导航栏 -->
+<nav class="flex items-center justify-between px-6 lg:px-12 h-16 bg-white/90 backdrop-blur-md fixed top-0 left-0 right-0 z-50 border-b border-blue-50">
+  <div class="flex items-center gap-8 lg:gap-16">
+    <a href="墨语智学首页.html" class="flex items-center gap-3">
+      <span class="text-primary text-2xl font-bold tracking-tight">墨语智学</span>
+    </a>
+    <div class="hidden lg:flex items-center gap-8">
+      <a href="墨语智学计划.html" class="text-gray-700 hover:text-primary transition-colors font-medium">备考规划</a>
+      <a href="#" class="text-gray-700 hover:text-primary transition-colors font-medium">在线教学</a>
+      <a href="墨语智学真题.html" class="text-gray-700 hover:text-primary transition-colors font-medium">真题练习</a>
+      <a href="墨语智学社区.html" class="text-gray-700 hover:text-primary transition-colors font-medium">学习社区</a>
+    </div>
+  </div>
+  
+  <!-- 动态登录/用户区域 -->
+  <div class="flex items-center gap-4 lg:gap-6" id="auth-section">
+    <div id="login-btn-container">
+      <a href="墨语智学登录.html" id="login-btn" class="flex items-center px-4 lg:px-6 py-2 bg-blue-50 text-primary rounded-button hover:bg-blue-100 transition-colors">
+        <span class="whitespace-nowrap font-medium text-sm lg:text-base">登录</span>
+      </a>
+    </div>
+    <a href="墨语智学聊天.html" class="flex items-center px-4 lg:px-6 py-2 bg-primary text-white rounded-button hover:bg-secondary transition-colors">
+      <span class="whitespace-nowrap font-medium text-sm lg:text-base">免费试用</span>
+    </a>
+  </div>
+</nav>
+
+<!-- 主体内容 -->
+<div class="flex pt-16 min-h-screen">
+    <!-- 侧边栏 -->
+    <div class="hidden lg:block w-64 bg-white border-r border-gray-200 p-4 fixed h-full">
+        <div class="mb-6">
+            <h3 class="text-lg font-semibold text-secondary mb-4">真题分类</h3>
+            <div class="space-y-1">
+                <a href="#" class="block sidebar-item active px-3 py-2 rounded-md" data-type="cet4">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-book text-primary"></i>
+                        <span class="text-gray-700">英语四级真题</span>
+                    </div>
+                </a>
+                <a href="#" class="block sidebar-item px-3 py-2 rounded-md" data-type="cet6">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-book-open text-primary"></i>
+                        <span class="text-gray-700">英语六级真题</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+        
+        <div>
+            <h3 class="text-lg font-semibold text-secondary mb-4">年份选择</h3>
+            <div class="space-y-1" id="year-list">
+                <a href="#" class="block sidebar-item px-3 py-2 rounded-md" data-year="2024">
+                    <div class="flex items-center gap-2">
+                        <i class="far fa-calendar-alt text-primary"></i>
+                        <span class="text-gray-700">2024年真题</span>
+                    </div>
+                </a>
+                <a href="#" class="block sidebar-item px-3 py-2 rounded-md" data-year="2023">
+                    <div class="flex items-center gap-2">
+                        <i class="far fa-calendar-alt text-primary"></i>
+                        <span class="text-gray-700">2023年真题</span>
+                    </div>
+                </a>
+                <a href="#" class="block sidebar-item px-3 py-2 rounded-md" data-year="2022">
+                    <div class="flex items-center gap-2">
+                        <i class="far fa-calendar-alt text-primary"></i>
+                        <span class="text-gray-700">2022年真题</span>
+                    </div>
+                </a>
+                <a href="#" class="block sidebar-item px-3 py-2 rounded-md" data-year="2021">
+                    <div class="flex items-center gap-2">
+                        <i class="far fa-calendar-alt text-primary"></i>
+                        <span class="text-gray-700">2021年真题</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+        
+        <div class="mt-6">
+            <h3 class="text-lg font-semibold text-secondary mb-4">真题下载</h3>
+            <div class="space-y-2">
+                <a href="#" class="block px-3 py-2 bg-blue-50 text-primary rounded-md hover:bg-blue-100 transition-colors">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-download"></i>
+                        <span>四级真题PDF合集</span>
+                    </div>
+                </a>
+                <a href="#" class="block px-3 py-2 bg-blue-50 text-primary rounded-md hover:bg-blue-100 transition-colors">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-download"></i>
+                        <span>六级真题PDF合集</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="flex-1 lg:ml-64 p-6">
+        <!-- 移动端筛选 -->
+        <div class="lg:hidden mb-6 bg-white p-4 rounded-lg shadow-sm">
+            <div class="flex items-center gap-4 mb-4">
+                <select id="mobile-type-select" class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                    <option value="cet4">英语四级</option>
+                    <option value="cet6">英语六级</option>
+                </select>
+                <select id="mobile-year-select" class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                    <option value="2024">2024年</option>
+                    <option value="2023">2023年</option>
+                    <option value="2022">2022年</option>
+                    <option value="2021">2021年</option>
+                </select>
+            </div>
+        </div>
+        
+        <!-- 标题和切换按钮 -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+            <h2 class="text-2xl font-bold text-secondary mb-4 sm:mb-0" id="content-title">2024年6月英语四级真题</h2>
+            <div class="flex bg-blue-50 rounded-lg p-1">
+                <button class="tab-button px-4 py-2 rounded-md active" data-tab="paper">真题试卷</button>
+                <button class="tab-button px-4 py-2 rounded-md" data-tab="analysis">答案解析</button>
+            </div>
+        </div>
+        
+        <!-- 倒计时显示 -->
+        <div class="mb-6">
+            <span class="text-xl font-semibold text-secondary">剩余时间：</span>
+            <span id="timer" class="text-xl font-bold text-primary">02:00:00</span>
+        </div>
+        
+        <!-- 真题内容区域 -->
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden mt-6">
+            <!-- 真题试卷 -->
+            <div class="content-section active p-6 lg:p-8" id="paper-content">
+                <div class="mb-8" data-section="writing">
+                    <h3 class="text-xl font-semibold text-secondary mb-4">第一部分：写作</h3>
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <p class="text-gray-700 mb-3"><strong>Directions:</strong> For this part, you are allowed 30 minutes to write an essay on the importance of developing a healthy lifestyle. You should write at least 120 words but no more than 180 words.</p>
+                        <div class="bg-white p-4 rounded border border-gray-200 writing-area" contenteditable="true" spellcheck="false" placeholder="请在此处作答..."></div>
+                    </div>
+                </div>
+                
+                <div class="mb-8" data-section="listening">
+                    <h3 class="text-xl font-semibold text-secondary mb-4">第二部分：听力</h3>
+                    <div class="space-y-6">
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <p class="text-gray-700 mb-3"><strong>Section A</strong></p>
+                            <div class="space-y-4">
+                                <div class="bg-white p-3 rounded border border-gray-200">
+                                    <p class="text-gray-600 mb-2"><strong>1.</strong> What does the woman suggest the man do?</p>
+                                    <div class="space-y-2">
+                                        <div class="flex items-center gap-2">
+                                            <input type="radio" id="q1-a" name="q1" value="A" data-question="1">
+                                            <label for="q1-a" class="text-gray-700">A) Check the website for updates</label>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <input type="radio" id="q1-b" name="q1" value="B" data-question="1">
+                                            <label for="q1-b" class="text-gray-700">B) Contact the IT department</label>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <input type="radio" id="q1-c" name="q1" value="C" data-question="1">
+                                            <label for="q1-c" class="text-gray-700">C) Try again later</label>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <input type="radio" id="q1-d" name="q1" value="D" data-question="1">
+                                            <label for="q1-d" class="text-gray-700">D) Use a different browser</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- 更多听力题目... -->
+                                <div class="bg-white p-3 rounded border border-gray-200">
+                                    <p class="text-gray-600 mb-2"><strong>2.</strong> Where is the conversation most probably taking place?</p>
+                                    <div class="space-y-2">
+                                        <div class="flex items-center gap-2">
+                                            <input type="radio" id="q2-a" name="q2" value="A" data-question="2">
+                                            <label for="q2-a" class="text-gray-700">A) At a library</label>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <input type="radio" id="q2-b" name="q2" value="B" data-question="2">
+                                            <label for="q2-b" class="text-gray-700">B) At a bookstore</label>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <input type="radio" id="q2-c" name="q2" value="C" data-question="2">
+                                            <label for="q2-c" class="text-gray-700">C) At a restaurant</label>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <input type="radio" id="q2-d" name="q2" value="D" data-question="2">
+                                            <label for="q2-d" class="text-gray-700">D) At a hotel</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-8" data-section="reading">
+                    <h3 class="text-xl font-semibold text-secondary mb-4">第三部分：阅读</h3>
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <p class="text-gray-700 mb-3"><strong>Section B</strong></p>
+                        <div class="bg-white p-4 rounded border border-gray-200 mb-4">
+                            <p class="text-gray-700 mb-2">Passage One</p>
+                            <p class="text-gray-600 mb-4">The concept of artificial intelligence (AI) has been around for decades, but only in recent years has it become a reality in our daily lives. From virtual assistants to self-driving cars, AI is transforming the way we live and work...</p>
+                            <div class="space-y-3">
+                                <p class="text-gray-700"><strong>26.</strong> What is the main idea of the passage?</p>
+                                <div class="space-y-2 ml-4">
+                                    <div class="flex items-center gap-2">
+                                        <input type="radio" id="q26-a" name="q26" value="A" data-question="26">
+                                        <label for="q26-a" class="text-gray-700">A) The history of AI development</label>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <input type="radio" id="q26-b" name="q26" value="B" data-question="26">
+                                        <label for="q26-b" class="text-gray-700">B) The impact of AI on daily life</label>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <input type="radio" id="q26-c" name="q26" value="C" data-question="26">
+                                        <label for="q26-c" class="text-gray-700">C) The technical challenges of AI</label>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <input type="radio" id="q26-d" name="q26" value="D" data-question="26">
+                                        <label for="q26-d" class="text-gray-700">D) The future predictions of AI</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 更多阅读题目... -->
+                        <div class="bg-white p-4 rounded border border-gray-200 mb-4">
+                            <p class="text-gray-700 mb-2">Passage Two</p>
+                            <p class="text-gray-600 mb-4">Climate change has become one of the most pressing issues of our time. Scientists warn that without immediate action, the consequences could be catastrophic...</p>
+                            <div class="space-y-3">
+                                <p class="text-gray-700"><strong>27.</strong> What is the author's main purpose in writing this passage?</p>
+                                <div class="space-y-2 ml-4">
+                                    <div class="flex items-center gap-2">
+                                        <input type="radio" id="q27-a" name="q27" value="A" data-question="27">
+                                        <label for="q27-a" class="text-gray-700">A) To criticize government policies</label>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <input type="radio" id="q27-b" name="q27" value="B" data-question="27">
+                                        <label for="q27-b" class="text-gray-700">B) To describe scientific research</label>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <input type="radio" id="q27-c" name="q27" value="C" data-question="27">
+                                        <label for="q27-c" class="text-gray-700">C) To urge immediate action</label>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <input type="radio" id="q27-d" name="q27" value="D" data-question="27">
+                                        <label for="q27-d" class="text-gray-700">D) To compare climate models</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div data-section="translation">
+                    <h3 class="text-xl font-semibold text-secondary mb-4">第四部分：翻译</h3>
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <p class="text-gray-700 mb-3"><strong>Directions:</strong> For this part, you are allowed 30 minutes to translate a passage from Chinese into English. You should write your answer on Answer Sheet 2.</p>
+                        <div class="bg-white p-4 rounded border border-gray-200 mb-3">
+                            <p class="text-gray-700">中国茶文化是中国制茶、饮茶的文化。中国是茶的故乡，中国人发现并利用茶，据说始于神农时代，少说也有4700多年了。直到现在，中国各族同胞还有民以茶代礼的风俗。</p>
+                        </div>
+                        <div class="bg-white p-4 rounded border border-gray-200 translation-area" contenteditable="true" spellcheck="false" placeholder="请在此处作答..."></div>
+                    </div>
+                </div>
+
+                <!-- 提交按钮 -->
+                <button id="submit-button" class="submit-button bg-primary text-white rounded-md hover:bg-secondary transition-colors">
+                    提交答卷
+                </button>
+
+                <!-- 能力测评饼图 -->
+                <div id="pie-chart-container" class="pie-chart-container">
+                    <h3 class="text-xl font-semibold text-secondary mb-4">能力测评</h3>
+                    <div class="flex flex-col lg:flex-row gap-8">
+                        <div class="lg:w-1/2">
+                            <canvas id="abilityChart"></canvas>
+                        </div>
+                        <div class="lg:w-1/2">
+                            <div class="space-y-4">
+                                <div>
+                                    <h4 class="font-semibold text-gray-700 mb-2">逻辑能力: <span id="logic-score">75</span>/100</h4>
+                                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                        <div class="bg-blue-600 h-2.5 rounded-full" style="width: 75%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-700 mb-2">词汇能力: <span id="vocab-score">82</span>/100</h4>
+                                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                        <div class="bg-green-500 h-2.5 rounded-full" style="width: 82%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-700 mb-2">语法能力: <span id="grammar-score">68</span>/100</h4>
+                                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                        <div class="bg-yellow-500 h-2.5 rounded-full" style="width: 68%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+                                <h4 class="font-semibold text-gray-700 mb-2">学习建议:</h4>
+                                <p class="text-gray-600">根据测评结果，您的词汇能力较强，但语法能力有待提高。建议您加强语法专项练习，特别是时态和复杂句型的运用。同时保持词汇量的积累，并多进行逻辑思维训练。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 答案解析 -->
+            <div class="content-section p-6 lg:p-8" id="analysis-content">
+                <div class="mb-8">
+                    <h3 class="text-xl font-semibold text-secondary mb-4">写作部分解析</h3>
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <p class="text-gray-700 mb-3"><strong>题目分析：</strong></p>
+                        <p class="text-gray-600 mb-4">本次四级写作题目要求考生就"养成健康生活方式的重要性"这一话题进行论述。这是一篇典型的议论文，考生需要从多个角度阐述健康生活方式的重要性，并提出相关建议。</p>
+                        
+                        <p class="text-gray-700 mb-3"><strong>参考范文：</strong></p>
+                        <div class="bg-white p-4 rounded border border-gray-200 mb-4">
+                            <p class="text-gray-600">The Importance of Developing a Healthy Lifestyle</p>
+                            <p class="text-gray-600 mt-2">Nowadays, with the acceleration of life pace, more and more people are neglecting the importance of maintaining a healthy lifestyle. However, developing healthy living habits is crucial for both physical and mental well-being.</p>
+                            <p class="text-gray-600 mt-2">Firstly, a healthy lifestyle can prevent various diseases. Regular exercise and balanced diet can strengthen our immune system and reduce the risk of chronic illnesses. Secondly, healthy habits improve work efficiency. Adequate sleep and proper relaxation enable us to concentrate better and be more productive. Lastly, healthy living brings happiness. When we feel good physically, we are more likely to maintain a positive attitude towards life.</p>
+                            <p class="text-gray-600 mt-2">In conclusion, cultivating a healthy lifestyle is essential in modern society. We should pay attention to our daily habits and make conscious efforts to live healthily.</p>
+                        </div>
+                        
+                        <p class="text-gray-700 mb-3"><strong>范文解析：</strong></p>
+                        <ul class="list-disc pl-5 space-y-2 text-gray-600">
+                            <li>文章结构清晰，分为引言、主体段落和结论三部分</li>
+                            <li>主体段落从三个不同角度论述健康生活方式的重要性</li>
+                            <li>使用了Firstly, Secondly, Lastly等连接词，使文章逻辑清晰</li>
+                            <li>词汇丰富，如acceleration, crucial, chronic illnesses等</li>
+                            <li>语法结构多样，包含复合句和简单句的交替使用</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="mb-8">
+                    <h3 class="text-xl font-semibold text-secondary mb-4">听力部分解析</h3>
+                    <div class="space-y-6">
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <p class="text-gray-700 mb-3"><strong>Section A 第1题解析：</strong></p>
+                            <div class="bg-white p-3 rounded border border-gray-200">
+                                <p class="text-gray-600 mb-2"><strong>题目：</strong> What does the woman suggest the man do?</p>
+                                <p class="text-gray-600 mb-2"><strong>正确选项：</strong> A) Check the website for updates</p>
+                                <p class="text-gray-600 mb-2"><strong>原文内容：</strong> "Why don't you check the university website? They usually post updates about system maintenance there."</p>
+                                <p class="text-gray-600"><strong>解析：</strong> 女士明确建议男士"check the university website"，与A选项完全一致。其他选项虽然在对话中可能被提及，但不是女士的建议。</p>
+                            </div>
+                        </div>
+                        <!-- 更多听力解析... -->
+                    </div>
+                </div>
+                
+                <div class="mb-8">
+                    <h3 class="text-xl font-semibold text-secondary mb-4">阅读部分解析</h3>
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <p class="text-gray-700 mb-3"><strong>Section B 第26题解析：</strong></p>
+                        <div class="bg-white p-4 rounded border border-gray-200">
+                            <p class="text-gray-600 mb-2"><strong>题目：</strong> What is the main idea of the passage?</p>
+                            <p class="text-gray-600 mb-2"><strong>正确选项：</strong> B) The impact of AI on daily life</p>
+                            <p class="text-gray-600 mb-2"><strong>关键句：</strong> "From virtual assistants to self-driving cars, AI is transforming the way we live and work..."</p>
+                            <p class="text-gray-600"><strong>解析：</strong> 全文主要讨论AI如何改变我们的日常生活和工作方式，如虚拟助手、自动驾驶汽车等，因此B选项最能概括文章主旨。A选项只涉及历史，C选项只涉及技术挑战，D选项只涉及未来预测，都不够全面。</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-semibold text-secondary mb-4">翻译部分解析</h3>
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <p class="text-gray-700 mb-3"><strong>参考译文：</strong></p>
+                        <div class="bg-white p-4 rounded border border-gray-200 mb-3">
+                            <p class="text-gray-600">Chinese tea culture refers to the culture of making and drinking tea in China. As the homeland of tea, China is credited with the discovery and utilization of tea, which is said to date back to the era of Shennong, at least 4,700 years ago. Even today, the tradition of serving tea as a form of etiquette still prevails among all ethnic groups in China.</p>
+                        </div>
+                        
+                        <p class="text-gray-700 mb-3"><strong>翻译要点：</strong></p>
+                        <ul class="list-disc pl-5 space-y-2 text-gray-600">
+                            <li>"中国茶文化"译为"Chinese tea culture"，简洁准确</li>
+                            <li>"茶的故乡"译为"homeland of tea"，比"birthplace"更贴切</li>
+                            <li>"据说始于..."使用which引导的非限制性定语从句，使句子结构紧凑</li>
+                            <li>"少说也有..."译为"at least"，表达准确</li>
+                            <li>"民以茶代礼"译为"serving tea as a form of etiquette"，准确传达文化内涵</li>
+                            <li>"风俗"译为"tradition...prevails"，比直译"custom"更符合英文表达习惯</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 机械人助手容器 - 修改为趴在边栏上的样式 -->
+<div id="robot-assistant-container">
+    <div class="robot-image-container">
+        <img src="https://imgur.la/images/2025/06/08/AB9D66DF1072932D11D8D306BE46693C.jpg" alt="小助手" class="robot-image">
+    </div>
+    <div class="robot-message"></div>
+</div>
+
+<!-- 底部答题进度条 -->
+<footer class="bg-white px-6 lg:px-12 py-6 border-t border-gray-200">
+    <div class="max-w-6xl mx-auto">
+        <div class="flex flex-col">
+            <h3 class="text-lg font-semibold text-secondary mb-4">答题进度</h3>
+            
+            <div class="relative">
+                <!-- 进度条 -->
+                <div class="progress-line">
+                    <div class="progress-line-fill" id="progress-line-fill" style="width: 0%"></div>
+                </div>
+                
+                <div class="flex justify-between">
+                    <!-- 写作部分 -->
+                    <div class="progress-item" id="writing-progress" style="width: 25%">
+                        <div class="flex flex-col items-center">
+                            <div class="progress-dot mb-2"></div>
+                            <span class="text-sm font-medium text-gray-700">写作</span>
+                            <span class="text-xs text-gray-500">未开始</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 听力部分 -->
+                    <div class="progress-item" id="listening-progress" style="width: 25%">
+                        <div class="flex flex-col items-center">
+                            <div class="progress-dot mb-2"></div>
+                            <span class="text-sm font-medium text-gray-700">听力</span>
+                            <span class="text-xs text-gray-500">未开始</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 阅读部分 -->
+                    <div class="progress-item" id="reading-progress" style="width: 25%">
+                        <div class="flex flex-col items-center">
+                            <div class="progress-dot mb-2"></div>
+                            <span class="text-sm font-medium text-gray-700">阅读</span>
+                            <span class="text-xs text-gray-500">未开始</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 翻译部分 -->
+                    <div class="progress-item" id="translation-progress" style="width: 25%">
+                        <div class="flex flex-col items-center">
+                            <div class="progress-dot mb-2"></div>
+                            <span class="text-sm font-medium text-gray-700">翻译</span>
+                            <span class="text-xs text-gray-500">未开始</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 详细进度统计 -->
+            <div class="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-medium text-gray-700">总题数</span>
+                        <span class="text-lg font-bold text-primary" id="total-questions">28</span>
+                    </div>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-medium text-gray-700">已完成</span>
+                        <span class="text-lg font-bold text-green-600" id="answered-questions">0</span>
+                    </div>
+                </div>
+                <div class="bg-yellow-50 p-4 rounded-lg">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-medium text-gray-700">未完成</span>
+                        <span class="text-lg font-bold text-yellow-600" id="unanswered-questions">28</span>
+                    </div>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-medium text-gray-700">正确率</span>
+                        <span class="text-lg font-bold text-gray-700" id="accuracy-rate">-</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 底部版权信息 -->
+            <div class="mt-8 pt-6 border-t border-gray-200">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                    <p class="text-gray-500 text-sm text-center md:text-left">© 2024 墨语智学教育科技有限公司 版权所有</p>
+                    <div class="flex gap-4">
+                        <a href="#" class="text-gray-500 hover:text-primary transition-colors text-sm">隐私政策</a>
+                        <a href="#" class="text-gray-500 hover:text-primary transition-colors text-sm">服务条款</a>
+                        <a href="#" class="text-gray-500 hover:text-primary transition-colors text-sm">免责声明</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script>
+    // 内嵌的auth模块
+    const authModule = (function() {
+        // 用户数据存储键名
+        const USER_STORAGE_KEY = 'moyu_user';
+        
+        // DOM元素ID常量
+        const AUTH_SECTION_ID = 'auth-section';
+        const LOGIN_BTN_CONTAINER_ID = 'login-btn-container';
+        
+        // 当前用户数据
+        let currentUser = null;
+        
+        // 初始化函数 - 在所有页面加载时调用
+        function initialize() {
+            // 从本地存储加载用户数据
+            loadUserData();
+            
+            // 更新UI
+            updateAuthUI();
+        }
+        
+        // 加载用户数据
+        function loadUserData() {
+            const userData = localStorage.getItem(USER_STORAGE_KEY);
+            if (userData) {
+                currentUser = JSON.parse(userData);
+            }
+        }
+        
+        // 保存用户数据
+        function saveUserData(user) {
+            localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+            currentUser = user;
+        }
+        
+        // 清除用户数据
+        function clearUserData() {
+            localStorage.removeItem(USER_STORAGE_KEY);
+            currentUser = null;
+        }
+        
+        // 处理登录
+        function handleLogin(userData) {
+            saveUserData(userData);
+            updateAuthUI();
+        }
+        
+        // 处理登出
+        function handleLogout() {
+            clearUserData();
+            updateAuthUI();
+        }
+        
+        // 检查登录状态
+        function isLoggedIn() {
+            return currentUser !== null;
+        }
+        
+        // 获取当前用户
+        function getCurrentUser() {
+            return currentUser;
+        }
+        
+        // 更新认证UI
+        function updateAuthUI() {
+            const authSection = document.getElementById(AUTH_SECTION_ID);
+            const loginBtnContainer = document.getElementById(LOGIN_BTN_CONTAINER_ID);
+            
+            if (!loginBtnContainer) return;
+            
+            // 清除现有内容
+            loginBtnContainer.innerHTML = '';
+            
+            if (isLoggedIn()) {
+                // 创建用户头像和下拉菜单
+                createUserDropdown(loginBtnContainer);
+            } else {
+                // 创建登录按钮
+                createLoginButton(loginBtnContainer);
+            }
+        }
+        
+        // 创建登录按钮
+        function createLoginButton(container) {
+            const loginBtn = document.createElement('a');
+            loginBtn.href = '墨语智学登录.html';
+            loginBtn.className = 'flex items-center px-4 lg:px-6 py-2 bg-blue-50 text-primary rounded-button hover:bg-blue-100 transition-colors';
+            loginBtn.innerHTML = '<span class="whitespace-nowrap font-medium text-sm lg:text-base">登录</span>';
+            
+            container.appendChild(loginBtn);
+        }
+        
+        // 创建用户下拉菜单
+        function createUserDropdown(container) {
+            // 用户头像按钮
+            const avatarBtn = document.createElement('div');
+            avatarBtn.className = 'relative group';
+            avatarBtn.id = 'user-dropdown';
+            
+            // 头像图片
+            const avatarImg = document.createElement('img');
+            avatarImg.src = currentUser.avatar || 'https://imgur.la/images/2025/06/07/94B2FFC12D41C799B69B2668BBA16BE7.jpg';
+            avatarImg.alt = currentUser.name || '用户';
+            avatarImg.className = 'w-8 h-8 rounded-full cursor-pointer object-cover';
+            avatarImg.style.minWidth = '32px';
+            
+            // 下拉菜单
+            const dropdownMenu = document.createElement('div');
+            dropdownMenu.className = 'absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 origin-top-right transform transition-all duration-200 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100';
+            dropdownMenu.style.transformOrigin = 'top right';
+            
+            dropdownMenu.innerHTML = `
+                <div class="py-1" role="menu" aria-orientation="vertical">
+                    <div class="px-4 py-2 border-b border-gray-100">
+                        <p class="text-sm font-medium text-gray-900">${currentUser.name || '用户'}</p>
+                        <p class="text-xs text-gray-500">${currentUser.username || ''}</p>
+                    </div>
+                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-primary transition-colors" role="menuitem">
+                        <i class="fas fa-user mr-2"></i>个人中心
+                    </a>
+                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-primary transition-colors" role="menuitem">
+                        <i class="fas fa-cog mr-2"></i>设置
+                    </a>
+                    <a href="#" id="logout-btn" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-primary transition-colors" role="menuitem">
+                        <i class="fas fa-sign-out-alt mr-2"></i>退出登录
+                    </a>
+                </div>
+            `;
+            
+            avatarBtn.appendChild(avatarImg);
+            avatarBtn.appendChild(dropdownMenu);
+            container.appendChild(avatarBtn);
+            
+            // 添加登出按钮事件
+            const logoutBtn = dropdownMenu.querySelector('#logout-btn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    handleLogout();
+                });
+            }
+            
+            // 点击外部关闭菜单
+            document.addEventListener('click', function(e) {
+                if (!avatarBtn.contains(e.target)) {
+                    dropdownMenu.classList.remove('opacity-100', 'scale-100');
+                    dropdownMenu.classList.add('opacity-0', 'scale-95');
+                }
+            });
+        }
+        
+        // 公共API
+        return {
+            initialize,
+            handleLogin,
+            handleLogout,
+            isLoggedIn,
+            getCurrentUser
+        };
+    })();
+
+    // 考试状态管理
+    const examManager = (function() {
+        // 考试状态
+        let examState = {
+            currentSection: null,
+            answeredQuestions: 0,
+            totalQuestions: 28, // 总题目数
+            sections: {
+                writing: { completed: false, questions: 1 },
+                listening: { completed: false, questions: 2 },
+                reading: { completed: false, questions: 2 },
+                translation: { completed: false, questions: 1 }
+            },
+            answers: {}
+        };
+        
+        // 初始化考试状态
+        function initialize() {
+            // 从本地存储加载考试状态
+            const savedState = localStorage.getItem('exam_state');
+            if (savedState) {
+                examState = JSON.parse(savedState);
+                updateProgressUI();
+            }
+            
+            // 设置当前部分
+            setCurrentSection('writing');
+            
+            // 监听答题进度
+            trackAnswerProgress();
+        }
+        
+        // 设置当前部分
+        function setCurrentSection(section) {
+            examState.currentSection = section;
+            updateProgressUI();
+        }
+        
+        // 标记部分完成
+        function markSectionCompleted(section) {
+            examState.sections[section].completed = true;
+            updateProgressUI();
+            saveState();
+        }
+        
+        // 记录答案
+        function recordAnswer(questionId, answer) {
+            examState.answers[questionId] = answer;
+            
+            // 计算已回答问题数
+            examState.answeredQuestions = Object.keys(examState.answers).length;
+            
+            // 检查当前部分是否完成
+            checkSectionCompletion();
+            
+            updateProgressUI();
+            saveState();
+        }
+        
+        // 检查当前部分是否完成
+        function checkSectionCompletion() {
+            const currentSection = examState.currentSection;
+            const sectionQuestions = examState.sections[currentSection].questions;
+            
+            let answeredInSection = 0;
+            for (const q in examState.answers) {
+                if (q.startsWith(currentSection) || 
+                    (currentSection === 'listening' && (parseInt(q) >= 1 && parseInt(q) <= sectionQuestions)) ||
+                    (currentSection === 'reading' && (parseInt(q) >= 26 && parseInt(q) <= 26 + sectionQuestions - 1))) {
+                    answeredInSection++;
+                }
+            }
+            
+            if (answeredInSection >= sectionQuestions) {
+                markSectionCompleted(currentSection);
+            }
+        }
+        
+        // 更新进度UI
+        function updateProgressUI() {
+            // 更新进度条
+            const progressPercentage = (examState.answeredQuestions / examState.totalQuestions) * 100;
+            document.getElementById('progress-line-fill').style.width = `${progressPercentage}%`;
+            
+            // 更新统计信息
+            document.getElementById('answered-questions').textContent = examState.answeredQuestions;
+            document.getElementById('unanswered-questions').textContent = examState.totalQuestions - examState.answeredQuestions;
+            
+            // 更新各部分状态
+            updateSectionStatus('writing');
+            updateSectionStatus('listening');
+            updateSectionStatus('reading');
+            updateSectionStatus('translation');
+            
+            // 设置当前部分
+            if (examState.currentSection) {
+                document.getElementById(`${examState.currentSection}-progress`).classList.add('current');
+            }
+        }
+        
+        // 更新部分状态
+        function updateSectionStatus(section) {
+            const sectionElement = document.getElementById(`${section}-progress`);
+            
+            if (examState.sections[section].completed) {
+                sectionElement.classList.add('completed');
+                sectionElement.classList.remove('current');
+                sectionElement.querySelector('.text-xs').textContent = '已完成';
+            } else {
+                sectionElement.classList.remove('completed', 'current');
+                sectionElement.querySelector('.text-xs').textContent = section === examState.currentSection ? '进行中' : '未开始';
+            }
+        }
+        
+        // 保存状态到本地存储
+        function saveState() {
+            localStorage.setItem('exam_state', JSON.stringify(examState));
+        }
+        
+        // 跟踪答题进度
+        function trackAnswerProgress() {
+            // 监听所有单选按钮的变化
+            document.querySelectorAll('input[type="radio"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const questionId = this.getAttribute('data-question');
+                    recordAnswer(questionId, this.value);
+                });
+            });
+            
+            // 监听写作和翻译区域的变化
+            const writingArea = document.querySelector('.writing-area');
+            const translationArea = document.querySelector('.translation-area');
+            
+            writingArea.addEventListener('input', function() {
+                if (this.textContent.trim().length > 50) { // 简单判断是否有内容
+                    markSectionCompleted('writing');
+                }
+            });
+            
+            translationArea.addEventListener('input', function() {
+                if (this.textContent.trim().length > 50) { // 简单判断是否有内容
+                    markSectionCompleted('translation');
+                }
+            });
+            
+            // 监听部分切换
+            document.querySelectorAll('[data-section]').forEach(section => {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const sectionId = entry.target.getAttribute('data-section');
+                            setCurrentSection(sectionId);
+                        }
+                    });
+                }, { threshold: 0.5 });
+                
+                observer.observe(section);
+            });
+        }
+        
+        // 提交考试
+        function submitExam() {
+            // 计算正确率（模拟数据）
+            const correctAnswers = Math.floor(examState.answeredQuestions * 0.85); // 假设85%正确率
+            const accuracy = Math.round((correctAnswers / examState.totalQuestions) * 100);
+            
+            // 更新UI
+            document.getElementById('accuracy-rate').textContent = `${accuracy}%`;
+            
+            // 显示能力测评结果
+            document.getElementById('pie-chart-container').style.display = 'block';
+            
+            // 初始化饼图
+            initPieChart();
+            
+            // 更新所有部分为已完成
+            Object.keys(examState.sections).forEach(section => {
+                examState.sections[section].completed = true;
+            });
+            examState.answeredQuestions = examState.totalQuestions;
+            updateProgressUI();
+            
+            // 清除本地存储
+            localStorage.removeItem('exam_state');
+            
+            // 滚动到测评结果
+            document.getElementById('pie-chart-container').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // 初始化饼图
+        function initPieChart() {
+            const ctx = document.getElementById('abilityChart').getContext('2d');
+            const chart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['逻辑能力', '词汇能力', '语法能力'],
+                    datasets: [{
+                        data: [75, 82, 68],
+                        backgroundColor: [
+                            '#3B82F6', // 蓝色
+                            '#10B981', // 绿色
+                            '#F59E0B'  // 黄色
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 12,
+                                padding: 20
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 公共API
+        return {
+            initialize,
+            submitExam
+        };
+    })();
+
+    // 倒计时功能实现
+    const timerManager = (function() {
+        let timer;
+        const timeLimit = 2 * 60 * 60; // 两小时倒计时（以秒为单位）
+        let remainingTime = timeLimit;
+        let isTimerRunning = true;
+        
+        // 初始化倒计时
+        function initialize() {
+            // 从本地存储加载剩余时间
+            const savedTime = localStorage.getItem('exam_time');
+            if (savedTime) {
+                remainingTime = parseInt(savedTime);
+            }
+            
+            startTimer();
+        }
+        
+        // 格式化时间为HH:MM:SS
+        function formatTime(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            
+            return [
+                hours.toString().padStart(2, '0'),
+                minutes.toString().padStart(2, '0'),
+                secs.toString().padStart(2, '0')
+            ].join(':');
+        }
+        
+        // 更新倒计时显示
+        function updateTimerDisplay() {
+            const timerElement = document.getElementById('timer');
+            timerElement.textContent = formatTime(remainingTime);
+            
+            // 最后5分钟变为红色并闪烁
+            if (remainingTime <= 5 * 60) {
+                timerElement.classList.add('time-warning');
+            } else {
+                timerElement.classList.remove('time-warning');
+            }
+            
+            // 保存剩余时间
+            localStorage.setItem('exam_time', remainingTime.toString());
+            
+            // 时间到自动提交
+            if (remainingTime <= 0) {
+                clearInterval(timer);
+                timerElement.textContent = "00:00:00";
+                timerElement.classList.add('time-warning');
+                examManager.submitExam();
+                localStorage.removeItem('exam_time');
+            }
+        }
+        
+        // 开始倒计时
+        function startTimer() {
+            updateTimerDisplay();
+            timer = setInterval(() => {
+                if (isTimerRunning && remainingTime > 0) {
+                    remainingTime--;
+                    updateTimerDisplay();
+                } else if (remainingTime <= 0) {
+                    clearInterval(timer);
+                    examManager.submitExam();
+                }
+            }, 1000);
+        }
+        
+        // 暂停倒计时
+        function pauseTimer() {
+            isTimerRunning = false;
+        }
+        
+        // 恢复倒计时
+        function resumeTimer() {
+            isTimerRunning = true;
+        }
+        
+        // 公共API
+        return {
+            initialize,
+            pauseTimer,
+            resumeTimer
+        };
+    })();
+
+    // 可爱的机械人助手类
+    class CuteRobotAssistant {
+        constructor(containerId) {
+            this.container = document.getElementById(containerId);
+            if (!this.container) return;
+
+            // 创建机械人元素 - 使用图片
+            this.container.innerHTML = `
+                <div class="robot-image-container">
+                    <img src="https://imgur.la/images/2025/06/08/AB9D66DF1072932D11D8D306BE46693C.jpg" alt="小助手" class="robot-image">
+                </div>
+                <div class="robot-message"></div>
+            `;
+
+            // 配置
+            this.config = {
+                position: 'right-middle',
+                reactions: {
+                    positive: true,
+                    negative: true,
+                    encouragement: true
+                },
+                messages: [
+                    "需要帮助解答真题题目吗？",
+                    "点击我可以获得答题技巧哦~",
+                    "我在这里帮你分析真题答案！",
+                    "有什么真题问题尽管问我吧！",
+                    "你的答题进度很不错，继续加油！",
+                    "想了解如何提高答题效率吗？",
+                    "听力部分需要帮助吗？",
+                    "写作模板可以找我获取哦！"
+                ]
+            };
+
+            // 设置初始位置
+            this.setPosition(this.config.position);
+            
+            // 添加点击事件
+            this.container.addEventListener('click', () => {
+                this.showRandomMessage(4000);
+                this.startTalkingAnimation();
+            });
+
+            // 初始动画
+            this.playHappyAnimation();
+        }
+
+        // 设置位置
+        setPosition(position) {
+            const positions = {
+                'right-bottom': { 
+                    right: '24px',
+                    bottom: '24px'
+                },
+                'right-middle': {
+                    right: '0',
+                    top: '50%',
+                    transform: 'translateY(-50%)'
+                },
+                'bottom-right': { right: '20px', bottom: '20px' },
+                'bottom-left': { left: '20px', bottom: '20px' },
+                'top-right': { right: '20px', top: '20px' },
+                'top-left': { left: '20px', top: '20px' }
+            };
+            
+            if (positions[position]) {
+                Object.assign(this.container.style, {
+                    position: 'fixed',
+                    ...positions[position],
+                    zIndex: '1000',
+                    pointerEvents: 'auto'
+                });
+                this.config.position = position;
+            }
+        }
+
+        // 显示随机消息
+        showRandomMessage(duration = 3000) {
+            const randomIndex = Math.floor(Math.random() * this.config.messages.length);
+            this.showMessage(this.config.messages[randomIndex], duration);
+        }
+
+        // 显示消息
+        showMessage(message, duration = 3000) {
+            // 创建或获取消息元素
+            if (!this.messageElement) {
+                this.messageElement = this.container.querySelector('.robot-message');
+            }
+            
+            this.messageElement.textContent = message;
+            this.messageElement.style.display = 'block';
+            
+            // 添加动画效果
+            this.startTalkingAnimation();
+            
+            if (duration > 0) {
+                setTimeout(() => {
+                    this.hideMessage();
+                    this.stopTalkingAnimation();
+                }, duration);
+            }
+        }
+
+        hideMessage() {
+            if (this.messageElement) {
+                this.messageElement.style.display = 'none';
+            }
+        }
+
+        // 开始说话动画
+        startTalkingAnimation() {
+            const image = this.container.querySelector('.robot-image');
+            image.classList.add('talk-animation');
+        }
+
+        // 停止说话动画
+        stopTalkingAnimation() {
+            const image = this.container.querySelector('.robot-image');
+            image.classList.remove('talk-animation');
+        }
+
+        // 响应正面反馈
+        reactPositive() {
+            if (this.config.reactions.positive) {
+                this.showMessage('做得很好！继续保持！', 2000);
+                this.playHappyAnimation();
+            }
+        }
+
+        // 响应负面反馈
+        reactNegative() {
+            if (this.config.reactions.negative) {
+                this.showMessage('别灰心，继续努力！', 2000);
+                this.playSadAnimation();
+            }
+        }
+
+        // 鼓励用户
+        encourage() {
+            if (this.config.reactions.encouragement) {
+                this.showMessage('你可以的！加油！', 2000);
+                this.playHappyAnimation();
+            }
+        }
+
+        // 播放开心动画
+        playHappyAnimation() {
+            const image = this.container.querySelector('.robot-image');
+            image.classList.add('happy-animation');
+            
+            setTimeout(() => {
+                image.classList.remove('happy-animation');
+            }, 2000);
+        }
+
+        // 播放难过动画
+        playSadAnimation() {
+            const image = this.container.querySelector('.robot-image');
+            image.classList.add('sad-animation');
+            
+            setTimeout(() => {
+                image.classList.remove('sad-animation');
+            }, 2000);
+        }
+
+        // 点头动画
+        playNodAnimation() {
+            const image = this.container.querySelector('.robot-image');
+            image.classList.add('nod-animation');
+            
+            setTimeout(() => {
+                image.classList.remove('nod-animation');
+            }, 1000);
+        }
+
+        // 响应消息
+        respondToMessage(message, sender) {
+            if (sender === 'user') {
+                // 分析用户消息情绪
+                const positiveWords = ['谢谢', '很好', '帮助', '喜欢', '棒'];
+                const negativeWords = ['错误', '不懂', '不会', '困难', '问题'];
+                
+                if (positiveWords.some(word => message.includes(word))) {
+                    this.reactPositive();
+                } else if (negativeWords.some(word => message.includes(word))) {
+                    this.reactNegative();
+                } else if (Math.random() > 0.7) {
+                    this.encourage();
+                }
+            } else if (sender === 'ai') {
+                // AI回复时点头
+                this.playNodAnimation();
+            }
+        }
+    }
+
+    // 页面加载时初始化所有模块
+    document.addEventListener('DOMContentLoaded', function() {
+        // 初始化认证模块
+        authModule.initialize();
+        
+        // 初始化考试管理
+        examManager.initialize();
+        
+        // 初始化倒计时
+        timerManager.initialize();
+        
+        // 侧边栏切换功能
+        setupSidebar();
+        
+        // 提交按钮事件
+        document.getElementById('submit-button').addEventListener('click', function() {
+            if (confirm('确定要提交答卷吗？提交后将无法修改答案！')) {
+                examManager.submitExam();
+            }
+        });
+        
+        // 初始化机械人助手
+        const robotAssistant = new CuteRobotAssistant('robot-assistant-container');
+        
+        // 显示欢迎消息
+        setTimeout(() => {
+            robotAssistant.showRandomMessage(3000);
+        }, 2000);
+    });
+    
+    // 设置侧边栏功能
+    function setupSidebar() {
+        // 获取所有侧边栏项
+        const typeItems = document.querySelectorAll('[data-type]');
+        const yearItems = document.querySelectorAll('[data-year]');
+        const tabButtons = document.querySelectorAll('[data-tab]');
+        
+        // 类型切换
+        typeItems.forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                const type = this.getAttribute('data-type');
+                
+                // 更新活跃状态
+                typeItems.forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+                
+                // 获取当前选中的年份
+                const activeYearItem = document.querySelector('[data-year].active');
+                const year = activeYearItem ? activeYearItem.getAttribute('data-year') : '2024';
+                
+                // 更新内容
+                updateContent(type, year);
+                
+                // 更新移动端选择器
+                document.getElementById('mobile-type-select').value = type;
+            });
+        });
+        
+        // 年份切换
+        yearItems.forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                const year = this.getAttribute('data-year');
+                
+                // 更新活跃状态
+                yearItems.forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+                
+                // 获取当前选中的类型
+                const activeTypeItem = document.querySelector('[data-type].active');
+                const type = activeTypeItem ? activeTypeItem.getAttribute('data-type') : 'cet4';
+                
+                // 更新内容
+                updateContent(type, year);
+                
+                // 更新移动端选择器
+                document.getElementById('mobile-year-select').value = year;
+            });
+        });
+        
+        // 移动端选择器切换
+        document.getElementById('mobile-type-select').addEventListener('change', function() {
+            const type = this.value;
+            const year = document.getElementById('mobile-year-select').value;
+            updateContent(type, year);
+            
+            // 更新侧边栏活跃状态
+            typeItems.forEach(i => i.classList.remove('active'));
+            document.querySelector(`[data-type="${type}"]`).classList.add('active');
+        });
+        
+        document.getElementById('mobile-year-select').addEventListener('change', function() {
+            const year = this.value;
+            const type = document.getElementById('mobile-type-select').value;
+            updateContent(type, year);
+            
+            // 更新侧边栏活跃状态
+            yearItems.forEach(i => i.classList.remove('active'));
+            document.querySelector(`[data-year="${year}"]`).classList.add('active');
+        });
+        
+        // 标签切换(真题/解析)
+        tabButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const tab = this.getAttribute('data-tab');
+                
+                // 更新活跃状态
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                
+                // 显示对应内容
+                document.querySelectorAll('.content-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                document.getElementById(`${tab}-content`).classList.add('active');
+            });
+        });
+        
+        // 默认激活第一个年份项
+        if (yearItems.length > 0) {
+            yearItems[0].classList.add('active');
+        }
+    }
+    
+    // 更新内容标题和内容
+    function updateContent(type, year) {
+        const titleMap = {
+            'cet4': '英语四级',
+            'cet6': '英语六级'
+        };
+        
+        const title = document.getElementById('content-title');
+        title.textContent = `${year}年6月${titleMap[type]}真题`;
+        
+        // 这里可以添加AJAX请求来获取实际内容
+        // 目前只是模拟内容切换
+        console.log(`加载${year}年${type}真题数据...`);
+    }
+</script>
+</body>
+</html>

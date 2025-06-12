@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>写作进阶 - 墨语智学</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2962FF',
+                        secondary: '#1A237E',
+                        success: '#4CAF50',
+                        error: '#F44336',
+                        warning: '#FF9800',
+                        info: '#2196F3',
+                        robotBlue: '#4A90E2',
+                        robotLightBlue: '#7FB2F0',
+                        robotDarkBlue: '#2E5C9A',
+                        lightBg: '#F8FAFF',
+                        cardBg: '#FFFFFF'
+                    },
+                    borderRadius: {
+                        'none': '0px',
+                        'sm': '2px',
+                        DEFAULT: '4px',
+                        'md': '8px',
+                        'lg': '12px',
+                        'xl': '16px',
+                        '2xl': '20px',
+                        '3xl': '24px',
+                        'full': '9999px',
+                        'button': '4px'
+                    },
+                    fontFamily: {
+                        'sans': ['Poppins', 'sans-serif']
+                    },
+                    boxShadow: {
+                        'card': '0 4px 12px rgba(41, 98, 255, 0.08)',
+                        'card-hover': '0 8px 24px rgba(41, 98, 255, 0.12)'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            min-height: 1024px;
+            font-family: 'Poppins', sans-serif;
+            background-color: #F5F7FF;
+            color: #333333;
+        }
+        .glass-effect {
+            backdrop-filter: blur(8px);
+            background-color: rgba(255, 255, 255, 0.95);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(41, 98, 255, 0.1);
+        }
+        .dropdown-enter {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        .dropdown-enter-active {
+            opacity: 1;
+            transform: translateY(0);
+            transition: all 0.2s ease;
+        }
+        .dropdown-exit {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .dropdown-exit-active {
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.2s ease;
+        }
+        .nav-item {
+            transition: color 0.2s ease;
+        }
+        .nav-item:hover {
+            color: #2962FF;
+        }
+        .active-nav {
+            color: '#2962FF';
+            border-bottom: 2px solid #2962FF;
+        }
+        .hero-bg {
+            background-image: linear-gradient(to right, rgba(41, 98, 255, 0.8), rgba(156, 39, 176, 0.8)), 
+                              url('https://ai-public.mastergo.com/ai/img_res/a127b747ca8237cc915f5cae10d01b16.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+        .line-clamp-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-clamp: 3;
+            display: box;
+            box-orient: vertical;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 14px;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        /* 机械人助手样式 - 修改为趴在边栏上的样式 */
+        #robot-assistant-container {
+            position: fixed;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 60px;
+            height: 120px;
+            z-index: 1000;
+            pointer-events: auto;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+        
+        .robot-image-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .robot-image {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            border-radius: 50% 0 0 50%;
+            box-shadow: -4px 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            border: 2px solid white;
+            position: absolute;
+            right: 0;
+        }
+        
+        /* 消息气泡 - 调整位置 */
+        .robot-message {
+            position: absolute;
+            right: 90px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: white;
+            padding: 12px 16px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 240px;
+            font-size: 14px;
+            line-height: 1.4;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .robot-message:after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: -8px;
+            transform: translateY(-50%);
+            border-width: 8px;
+            border-style: solid;
+            border-color: transparent transparent transparent white;
+        }
+        
+        /* 动画效果 */
+        .talk-animation {
+            animation: talk 0.5s infinite alternate;
+        }
+        
+        .happy-animation {
+            animation: happy 1s ease;
+        }
+        
+        .sad-animation {
+            animation: sad 1s ease;
+        }
+        
+        .nod-animation {
+            animation: nod 0.5s ease;
+        }
+        
+        @keyframes talk {
+            0% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-3px) scale(1.05); }
+            100% { transform: translateY(0) scale(1); }
+        }
+        
+        @keyframes happy {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(10deg); }
+            50% { transform: rotate(-10deg); }
+            75% { transform: rotate(5deg); }
+        }
+        
+        @keyframes sad {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(5px); }
+        }
+        
+        @keyframes nod {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 (与首页一致) -->
+    <nav class="flex items-center justify-between px-6 lg:px-12 h-16 bg-white/90 backdrop-blur-md fixed top-0 left-0 right-0 z-50 border-b border-blue-50">
+        <div class="flex items-center gap-8 lg:gap-16">
+            <a href="墨语智学首页.html" class="flex items-center gap-3">
+                <span class="text-primary text-2xl font-bold tracking-tight">墨语智学</span>
+            </a>
+            <div class="hidden lg:flex items-center gap-8">
+                <a href="墨语智学计划.html" class="text-gray-700 hover:text-primary transition-colors font-medium">备考规划</a>
+                <a href="#" class="text-gray-700 hover:text-primary transition-colors font-medium">在线教学</a>
+                <a href="墨语智学真题.html" class="text-gray-700 hover:text-primary transition-colors font-medium">真题练习</a>
+                <a href="#" class="text-gray-700 hover:text-primary transition-colors font-medium">学习社区</a>
+            </div>
+        </div>
+        
+        <!-- 动态登录/用户区域 -->
+        <div class="flex items-center gap-4 lg:gap-6" id="auth-section">
+            <div id="login-btn-container">
+                <a href="墨语智学登录.html" class="flex items-center px-4 lg:px-6 py-2 bg-blue-50 text-primary rounded-button hover:bg-blue-100 transition-colors">
+                    <span class="whitespace-nowrap font-medium text-sm lg:text-base">登录</span>
+                </a>
+            </div>
+            <a href="墨语智学聊天.html" class="flex items-center px-4 lg:px-6 py-2 bg-primary text-white rounded-button hover:bg-secondary transition-colors">
+                <span class="whitespace-nowrap font-medium text-sm lg:text-base">免费试用</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- 主内容区域 -->
+    <main class="pt-24 pb-16 max-w-[1440px] mx-auto px-6">
+        <!-- Hero区域 -->
+        <div class="hero-bg rounded-2xl p-8 lg:p-12 mb-12 text-white">
+            <div class="max-w-2xl">
+                <h1 class="text-3xl lg:text-5xl font-bold mb-6">四六级写作进阶训练</h1>
+                <p class="text-lg lg:text-xl mb-8 opacity-90">掌握核心写作框架，提升表达技巧，让你的英语写作更上一层楼</p>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <button id="start-practice" class="px-6 py-3 bg-white text-primary rounded-button hover:bg-white/90 transition-colors font-medium">
+                        开始新练习
+                    </button>
+                    <button id="view-progress" class="px-6 py-3 bg-primary/20 text-white rounded-button hover:bg-primary/30 transition-colors font-medium">
+                        查看学习进度
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 写作技巧 -->
+        <section class="mb-12">
+            <h2 class="text-2xl lg:text-3xl font-bold text-secondary mb-6">写作技巧</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                    <div class="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center mb-4 text-primary text-xl">
+                        <i class="fas fa-pen"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-secondary mb-3">议论文写作</h3>
+                    <p class="text-gray-600 mb-4">掌握论证方法，学会有理有据地表达观点</p>
+                    <a href="#" class="text-primary hover:text-secondary transition-colors flex items-center gap-2 text-sm">
+                        查看详情 <i class="fas fa-arrow-right text-xs"></i>
+                    </a>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                    <div class="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center mb-4 text-primary text-xl">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-secondary mb-3">图表作文</h3>
+                    <p class="text-gray-600 mb-4">数据分析与描述，准确表达统计信息</p>
+                    <a href="#" class="text-primary hover:text-secondary transition-colors flex items-center gap-2 text-sm">
+                        查看详情 <i class="fas fa-arrow-right text-xs"></i>
+                    </a>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                    <div class="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center mb-4 text-primary text-xl">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-secondary mb-3">应用文写作</h3>
+                    <p class="text-gray-600 mb-4">掌握书信、通知等实用文体的写作技巧</p>
+                    <a href="#" class="text-primary hover:text-secondary transition-colors flex items-center gap-2 text-sm">
+                        查看详情 <i class="fas fa-arrow-right text-xs"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- 范文学习 -->
+        <section class="mb-12">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                <h2 class="text-2xl lg:text-3xl font-bold text-secondary">范文学习</h2>
+                <div class="flex gap-3 mt-4 md:mt-0">
+                    <button id="filter-btn" class="px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-button hover:bg-gray-50 transition-colors flex items-center gap-2">
+                        <i class="fas fa-filter"></i>
+                        <span>筛选</span>
+                    </button>
+                    <button id="sort-btn" class="px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-button hover:bg-gray-50 transition-colors flex items-center gap-2">
+                        <i class="fas fa-sort"></i>
+                        <span>排序</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="sample-essays-container">
+                <!-- 范文将通过JavaScript动态加载 -->
+            </div>
+        </section>
+
+        <!-- 学习数据 -->
+        <section>
+            <h2 class="text-2xl lg:text-3xl font-bold text-secondary mb-6">学习数据</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-semibold text-secondary mb-4">能力分析</h3>
+                    <div class="h-64">
+                        <canvas id="skills-chart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-semibold text-secondary mb-4">进步趋势</h3>
+                    <div class="h-64">
+                        <canvas id="progress-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 - 优化后的写作资源部分 -->
+    <footer class="bg-gray-50 py-12">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <!-- 写作资源 -->
+                <div>
+                    <h3 class="text-lg font-semibold text-secondary mb-4">写作资源</h3>
+                    <ul class="space-y-2">
+                        <li>
+                            <a href="#" class="text-gray-600 hover:text-primary transition-colors flex items-center group">
+                                <span>四六级写作模板</span>
+                                <i class="fas fa-external-link-alt ml-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="text-gray-600 hover:text-primary transition-colors flex items-center group">
+                                <span>高分句型库</span>
+                                <i class="fas fa-external-link-alt ml-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="text-gray-600 hover:text-primary transition-colors flex items-center group">
+                                <span>学术词汇表</span>
+                                <i class="fas fa-external-link-alt ml-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="text-gray-600 hover:text-primary transition-colors flex items-center group">
+                                <span>写作评分标准</span>
+                                <i class="fas fa-external-link-alt ml-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- 写作工具 -->
+                <div>
+                    <h3 class="text-lg font-semibold text-secondary mb-4">写作工具</h3>
+                    <ul class="space-y-2">
+                        <li>
+                            <a href="#" class="text-gray-600 hover:text-primary transition-colors flex items-center group">
+                                <span>AI智能批改</span>
+                                <i class="fas fa-external-link-alt ml-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="text-gray-600 hover:text-primary transition-colors flex items-center group">
+                                <span>语法检查器</span>
+                                <i class="fas fa-external-link-alt ml-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="text-gray-600 hover:text-primary transition-colors flex items-center group">
+                                <span>同义词替换</span>
+                                <i class="fas fa-external-link-alt ml-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="text-gray-600 hover:text-primary transition-colors flex items-center group">
+                                <span>写作计时器</span>
+                                <i class="fas fa-external-link-alt ml-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- 学习指导 -->
+                <div>
+                    <h3 class="text-lg font-semibold text-secondary mb-4">学习指导</h3>
+                    <ul class="space-y-2">
+                        <li>
+                            <a href="#" class="text-gray-600 hover:text-primary transition-colors flex items-center group">
+                                <span>写作常见错误</span>
+                                <i class="fas fa-external-link-alt ml-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="text-gray-600 hover:text-primary transition-colors flex items-center group">
+                                <span>写作提升技巧</span>
+                                <i class="fas fa-external-link-alt ml-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="text-gray-600 hover:text-primary transition-colors flex items-center group">
+                                <span>范文解析</span>
+                                <i class="fas fa-external-link-alt ml-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="text-gray-600 hover:text-primary transition-colors flex items-center group">
+                                <span>写作计划制定</span>
+                                <i class="fas fa-external-link-alt ml-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- 联系我们 -->
+                <div>
+                    <h3 class="text-lg font-semibold text-secondary mb-4">联系我们</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <i class="fas fa-envelope text-primary mt-1 mr-3"></i>
+                            <div>
+                                <p class="text-sm text-gray-500">写作问题反馈</p>
+                                <a href="mailto:writing@moyu.com" class="text-gray-600 hover:text-primary transition-colors">writing@moyu.com</a>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-phone-alt text-primary mt-1 mr-3"></i>
+                            <div>
+                                <p class="text-sm text-gray-500">写作指导咨询</p>
+                                <a href="tel:400-123-4567" class="text-gray-600 hover:text-primary transition-colors">400-123-4567</a>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-clock text-primary mt-1 mr-3"></i>
+                            <div>
+                                <p class="text-sm text-gray-500">服务时间</p>
+                                <p class="text-gray-600">9:00-18:00 (周一至周五)</p>
+                            </div>
+                        </li>
+                    </ul>
+                    <div class="flex gap-4 mt-4">
+                        <a href="#" class="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center text-primary hover:bg-blue-100 transition-colors tooltip">
+                            <i class="fab fa-weixin"></i>
+                            <span class="tooltiptext">扫码关注微信公众号</span>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center text-primary hover:bg-blue-100 transition-colors tooltip">
+                            <i class="fab fa-qq"></i>
+                            <span class="tooltiptext">加入QQ学习群</span>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center text-primary hover:bg-blue-100 transition-colors tooltip">
+                            <i class="fas fa-headset"></i>
+                            <span class="tooltiptext">在线客服</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center text-gray-500 text-sm">
+                <p>© 2025 墨语智学 版权所有 | 沪ICP备12345678号</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 机械人助手容器 - 修改为趴在边栏上的样式 -->
+    <div id="robot-assistant-container">
+        <div class="robot-image-container">
+            <img src="https://imgur.la/images/2025/06/08/AB9D66DF1072932D11D8D306BE46693C.jpg" alt="小助手" class="robot-image">
+        </div>
+        <div class="robot-message"></div>
+    </div>
+
+    <script>
+        // 内嵌的auth模块
+        const authModule = (function() {
+            // 用户数据存储键名
+            const USER_STORAGE_KEY = 'moyu_user';
+            
+            // DOM元素ID常量
+            const AUTH_SECTION_ID = 'auth-section';
+            const LOGIN_BTN_CONTAINER_ID = 'login-btn-container';
+            
+            // 当前用户数据
+            let currentUser = null;
+            
+            // 初始化函数 - 在所有页面加载时调用
+            function initialize() {
+                // 从本地存储加载用户数据
+                loadUserData();
+                
+                // 更新UI
+                updateAuthUI();
+            }
+            
+            // 加载用户数据
+            function loadUserData() {
+                const userData = localStorage.getItem(USER_STORAGE_KEY);
+                if (userData) {
+                    currentUser = JSON.parse(userData);
+                }
+            }
+            
+            // 保存用户数据
+            function saveUserData(user) {
+                localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+                currentUser = user;
+            }
+            
+            // 清除用户数据
+            function clearUserData() {
+                localStorage.removeItem(USER_STORAGE_KEY);
+                currentUser = null;
+            }
+            
+            // 处理登录
+            function handleLogin(userData) {
+                saveUserData(userData);
+                updateAuthUI();
+            }
+            
+            // 处理登出
+            function handleLogout() {
+                clearUserData();
+                updateAuthUI();
+            }
+            
+            // 检查登录状态
+            function isLoggedIn() {
+                return currentUser !== null;
+            }
+            
+            // 获取当前用户
+            function getCurrentUser() {
+                return currentUser;
+            }
+            
+            // 更新认证UI
+            function updateAuthUI() {
+                const authSection = document.getElementById(AUTH_SECTION_ID);
+                const loginBtnContainer = document.getElementById(LOGIN_BTN_CONTAINER_ID);
+                
+                if (!loginBtnContainer) return;
+                
+                // 清除现有内容
+                loginBtnContainer.innerHTML = '';
+                
+                if (isLoggedIn()) {
+                    // 创建用户头像和下拉菜单
+                    createUserDropdown(loginBtnContainer);
+                } else {
+                    // 创建登录按钮
+                    createLoginButton(loginBtnContainer);
+                }
+            }
+            
+            // 创建登录按钮
+            function createLoginButton(container) {
+                const loginBtn = document.createElement('a');
+                loginBtn.href = '墨语智学登录.html';
+                loginBtn.className = 'flex items-center px-4 lg:px-6 py-2 bg-blue-50 text-primary rounded-button hover:bg-blue-100 transition-colors';
+                loginBtn.innerHTML = '<span class="whitespace-nowrap font-medium text-sm lg:text-base">登录</span>';
+                
+                container.appendChild(loginBtn);
+            }
+            
+            // 创建用户下拉菜单
+            function createUserDropdown(container) {
+                // 用户头像按钮
+                const avatarBtn = document.createElement('div');
+                avatarBtn.className = 'relative group';
+                avatarBtn.id = 'user-dropdown';
+                
+                // 头像图片
+                const avatarImg = document.createElement('img');
+                avatarImg.src = currentUser.avatar || 'https://imgur.la/images/2025/06/07/94B2FFC12D41C799B69B2668BBA16BE7.jpg';
+                avatarImg.alt = currentUser.name || '用户';
+                avatarImg.className = 'w-8 h-8 rounded-full cursor-pointer object-cover';
+                avatarImg.style.minWidth = '32px';
+                
+                // 下拉菜单
+                const dropdownMenu = document.createElement('div');
+                dropdownMenu.className = 'absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 origin-top-right transform transition-all duration-200 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100';
+                dropdownMenu.style.transformOrigin = 'top right';
+                
+                dropdownMenu.innerHTML = `
+                    <div class="py-1" role="menu" aria-orientation="vertical">
+                        <div class="px-4 py-2 border-b border-gray-100">
+                            <p class="text-sm font-medium text-gray-900">${currentUser.name || '用户'}</p>
+                            <p class="text-xs text-gray-500">${currentUser.username || ''}</p>
+                        </div>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-primary transition-colors" role="menuitem">
+                            <i class="fas fa-user mr-2"></i>个人中心
+                        </a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-primary transition-colors" role="menuitem">
+                            <i class="fas fa-cog mr-2"></i>设置
+                        </a>
+                        <a href="#" id="logout-btn" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-primary transition-colors" role="menuitem">
+                            <i class="fas fa-sign-out-alt mr-2"></i>退出登录
+                        </a>
+                    </div>
+                `;
+                
+                avatarBtn.appendChild(avatarImg);
+                avatarBtn.appendChild(dropdownMenu);
+                container.appendChild(avatarBtn);
+                
+                // 添加登出按钮事件
+                const logoutBtn = dropdownMenu.querySelector('#logout-btn');
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        handleLogout();
+                    });
+                }
+                
+                // 点击外部关闭菜单
+                document.addEventListener('click', function(e) {
+                    if (!avatarBtn.contains(e.target)) {
+                        dropdownMenu.classList.remove('opacity-100', 'scale-100');
+                        dropdownMenu.classList.add('opacity-0', 'scale-95');
+                    }
+                });
+            }
+            
+            // 公共API
+            return {
+                initialize,
+                handleLogin,
+                handleLogout,
+                isLoggedIn,
+                getCurrentUser
+            };
+        })();
+
+        // 可爱的机械人助手类 - 修改为适合写作界面的提示语
+        class CuteRobotAssistant {
+            constructor(containerId) {
+                this.container = document.getElementById(containerId);
+                if (!this.container) return;
+
+                // 创建机械人元素 - 使用图片
+                this.container.innerHTML = `
+                    <div class="robot-image-container">
+                        <img src="https://imgur.la/images/2025/06/08/AB9D66DF1072932D11D8D306BE46693C.jpg" alt="小助手" class="robot-image">
+                    </div>
+                    <div class="robot-message"></div>
+                `;
+
+                // 配置 - 修改为适合写作界面的提示语
+                this.config = {
+                    position: 'right-middle',
+                    reactions: {
+                        positive: true,
+                        negative: true,
+                        encouragement: true
+                    },
+                    messages: [
+                        "需要写作方面的帮助吗？",
+                        "点击我可以获得写作建议哦~",
+                        "我在这里帮你提升写作能力！",
+                        "有什么写作问题尽管问我吧！",
+                        "你的写作进步很明显，继续加油！",
+                        "想了解如何提高写作分数吗？",
+                        "需要范文参考吗？我可以帮你找找",
+                        "写作遇到困难了吗？我在这里"
+                    ]
+                };
+
+                // 设置初始位置
+                this.setPosition(this.config.position);
+                
+                // 添加点击事件
+                this.container.addEventListener('click', () => {
+                    this.showRandomMessage(4000);
+                    this.startTalkingAnimation();
+                });
+
+                // 初始动画
+                this.playHappyAnimation();
+            }
+
+            // 设置位置
+            setPosition(position) {
+                const positions = {
+                    'right-bottom': { 
+                        right: '24px',
+                        bottom: '24px'
+                    },
+                    'right-middle': {
+                        right: '0',
+                        top: '50%',
+                        transform: 'translateY(-50%)'
+                    },
+                    'bottom-right': { right: '20px', bottom: '20px' },
+                    'bottom-left': { left: '20px', bottom: '20px' },
+                    'top-right': { right: '20px', top: '20px' },
+                    'top-left': { left: '20px', top: '20px' }
+                };
+                
+                if (positions[position]) {
+                    Object.assign(this.container.style, {
+                        position: 'fixed',
+                        ...positions[position],
+                        zIndex: '1000',
+                        pointerEvents: 'auto'
+                    });
+                    this.config.position = position;
+                }
+            }
+
+            // 显示随机消息
+            showRandomMessage(duration = 3000) {
+                const randomIndex = Math.floor(Math.random() * this.config.messages.length);
+                this.showMessage(this.config.messages[randomIndex], duration);
+            }
+
+            // 显示消息
+            showMessage(message, duration = 3000) {
+                // 创建或获取消息元素
+                if (!this.messageElement) {
+                    this.messageElement = this.container.querySelector('.robot-message');
+                }
+                
+                this.messageElement.textContent = message;
+                this.messageElement.style.display = 'block';
+                
+                // 添加动画效果
+                this.startTalkingAnimation();
+                
+                if (duration > 0) {
+                    setTimeout(() => {
+                        this.hideMessage();
+                        this.stopTalkingAnimation();
+                    }, duration);
+                }
+            }
+
+            hideMessage() {
+                if (this.messageElement) {
+                    this.messageElement.style.display = 'none';
+                }
+            }
+
+            // 开始说话动画
+            startTalkingAnimation() {
+                const image = this.container.querySelector('.robot-image');
+                image.classList.add('talk-animation');
+            }
+
+            // 停止说话动画
+            stopTalkingAnimation() {
+                const image = this.container.querySelector('.robot-image');
+                image.classList.remove('talk-animation');
+            }
+
+            // 响应正面反馈
+            reactPositive() {
+                if (this.config.reactions.positive) {
+                    this.showMessage('写得很好！继续保持！', 2000);
+                    this.playHappyAnimation();
+                }
+            }
+
+            // 响应负面反馈
+            reactNegative() {
+                if (this.config.reactions.negative) {
+                    this.showMessage('别灰心，写作需要多练习！', 2000);
+                    this.playSadAnimation();
+                }
+            }
+
+            // 鼓励用户
+            encourage() {
+                if (this.config.reactions.encouragement) {
+                    this.showMessage('你可以写出好文章的！加油！', 2000);
+                    this.playHappyAnimation();
+                }
+            }
+
+            // 播放开心动画
+            playHappyAnimation() {
+                const image = this.container.querySelector('.robot-image');
+                image.classList.add('happy-animation');
+                
+                setTimeout(() => {
+                    image.classList.remove('happy-animation');
+                }, 2000);
+            }
+
+            // 播放难过动画
+            playSadAnimation() {
+                const image = this.container.querySelector('.robot-image');
+                image.classList.add('sad-animation');
+                
+                setTimeout(() => {
+                    image.classList.remove('sad-animation');
+                }, 2000);
+            }
+
+            // 点头动画
+            playNodAnimation() {
+                const image = this.container.querySelector('.robot-image');
+                image.classList.add('nod-animation');
+                
+                setTimeout(() => {
+                    image.classList.remove('nod-animation');
+                }, 1000);
+            }
+
+            // 响应消息
+            respondToMessage(message, sender) {
+                if (sender === 'user') {
+                    // 分析用户消息情绪
+                    const positiveWords = ['谢谢', '很好', '帮助', '喜欢', '棒'];
+                    const negativeWords = ['错误', '不懂', '不会', '困难', '问题'];
+                    
+                    if (positiveWords.some(word => message.includes(word))) {
+                        this.reactPositive();
+                    } else if (negativeWords.some(word => message.includes(word))) {
+                        this.reactNegative();
+                    } else if (Math.random() > 0.7) {
+                        this.encourage();
+                    }
+                } else if (sender === 'ai') {
+                    // AI回复时点头
+                    this.playNodAnimation();
+                }
+            }
+        }
+
+        // 范文数据
+        const sampleEssays = [
+            {
+                id: 1,
+                type: '议论文',
+                title: 'Social Media\'s Impact on Modern Society',
+                score: '28/30',
+                date: '2024-01-15',
+                wordCount: 250,
+                excerpt: 'In recent years, social media has become an integral part of our daily lives, fundamentally changing how we communicate, work, and interact with one another. While it offers numerous benefits, such as instant connectivity and information sharing, it also presents challenges like privacy concerns and mental health issues...',
+                content: '完整范文内容...'
+            },
+            {
+                id: 2,
+                type: '图表作文',
+                title: 'Global Environmental Protection Trends',
+                score: '27/30',
+                date: '2024-01-12',
+                wordCount: 180,
+                excerpt: 'The graph illustrates the increasing awareness and implementation of environmental protection measures across different countries from 2010 to 2023. As can be seen, developed nations have shown a steady rise in environmental initiatives...',
+                content: '完整范文内容...'
+            },
+            {
+                id: 3,
+                type: '应用文',
+                title: 'A Letter to the University President',
+                score: '29/30',
+                date: '2024-01-08',
+                wordCount: 150,
+                excerpt: 'Dear President Smith, I am writing to express my concerns about the recent changes to the library opening hours. As a senior student preparing for my final exams, I find the reduced hours particularly inconvenient...',
+                content: '完整范文内容...'
+            },
+            {
+                id: 4,
+                type: '议论文',
+                title: 'The Importance of Critical Thinking',
+                score: '26/30',
+                date: '2023-12-28',
+                wordCount: 220,
+                excerpt: 'Critical thinking is an essential skill in today\'s information-rich world. It enables individuals to analyze information objectively, make reasoned judgments, and solve problems effectively. In an era of fake news and misinformation...',
+                content: '完整范文内容...'
+            }
+        ];
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化auth模块
+            authModule.initialize();
+            
+            // 加载范文
+            loadSampleEssays();
+            
+            // 能力分析雷达图
+            const skillsCtx = document.getElementById('skills-chart').getContext('2d');
+            const skillsChart = new Chart(skillsCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['内容', '结构', '词汇', '语法', '连贯性'],
+                    datasets: [{
+                        label: '能力评估',
+                        data: [85, 90, 75, 80, 85],
+                        backgroundColor: 'rgba(41, 98, 255, 0.2)',
+                        borderColor: '#2962FF',
+                        pointBackgroundColor: '#2962FF',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#2962FF'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: {
+                                display: true
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 100
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+            
+            // 进步趋势折线图
+            const progressCtx = document.getElementById('progress-chart').getContext('2d');
+            const progressChart = new Chart(progressCtx, {
+                type: 'line',
+                data: {
+                    labels: ['1月', '2月', '3月', '4月', '5月', '6月'],
+                    datasets: [{
+                        label: '写作分数',
+                        data: [65, 70, 75, 78, 82, 85],
+                        fill: false,
+                        backgroundColor: '#2962FF',
+                        borderColor: '#2962FF',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 50,
+                            max: 100
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+            
+            // 按钮事件
+            document.getElementById('start-practice').addEventListener('click', function() {
+                if (authModule.isLoggedIn()) {
+                    window.location.href = '墨语智学写作练习.html';
+                } else {
+                    alert('请先登录以开始写作练习');
+                    window.location.href = '墨语智学登录.html';
+                }
+            });
+            
+            document.getElementById('view-progress').addEventListener('click', function() {
+                if (authModule.isLoggedIn()) {
+                    // 显示学习进度详情
+                    alert('正在加载您的学习进度...');
+                } else {
+                    alert('请先登录以查看学习进度');
+                    window.location.href = '墨语智学登录.html';
+                }
+            });
+            
+            // 筛选按钮
+            document.getElementById('filter-btn').addEventListener('click', function() {
+                showFilterOptions();
+            });
+            
+            // 排序按钮
+            document.getElementById('sort-btn').addEventListener('click', function() {
+                showSortOptions();
+            });
+            
+            // 初始化机械人助手
+            const robotAssistant = new CuteRobotAssistant('robot-assistant-container');
+            
+            // 显示欢迎消息
+            setTimeout(() => {
+                robotAssistant.showRandomMessage(3000);
+            }, 2000);
+            
+            // 响应式调整图表大小
+            window.addEventListener('resize', function() {
+                skillsChart.resize();
+                progressChart.resize();
+            });
+        });
+        
+        // 加载范文
+        function loadSampleEssays() {
+            const container = document.getElementById('sample-essays-container');
+            container.innerHTML = '';
+            
+            sampleEssays.slice(0, 4).forEach(essay => {
+                const essayCard = document.createElement('div');
+                essayCard.className = 'bg-white rounded-xl shadow-lg p-6 card-hover';
+                essayCard.innerHTML = `
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="px-3 py-1 bg-blue-50 text-primary text-sm rounded-full">${essay.type}</span>
+                        <span class="text-primary font-medium">得分：${essay.score}</span>
+                    </div>
+                    <h3 class="text-lg font-semibold text-secondary mb-3">${essay.title}</h3>
+                    <p class="text-gray-600 mb-4 line-clamp-3">${essay.excerpt}</p>
+                    <div class="flex justify-between items-center">
+                        <div class="flex gap-4 text-sm text-gray-500">
+                            <span>${essay.date}</span>
+                            <span>字数：${essay.wordCount}</span>
+                        </div>
+                        <a href="#" class="text-primary hover:text-secondary transition-colors flex items-center gap-2 text-sm view-essay" data-id="${essay.id}">
+                            查看详情 <i class="fas fa-arrow-right text-xs"></i>
+                        </a>
+                    </div>
+                `;
+                container.appendChild(essayCard);
+            });
+            
+            // 添加查看详情事件
+            document.querySelectorAll('.view-essay').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const essayId = parseInt(this.getAttribute('data-id'));
+                    viewEssayDetails(essayId);
+                });
+            });
+        }
+        
+        // 查看范文详情
+        function viewEssayDetails(essayId) {
+            const essay = sampleEssays.find(e => e.id === essayId);
+            if (essay) {
+                // 在实际应用中，这里可以打开一个模态框或跳转到详情页
+                alert(`正在加载范文: ${essay.title}\n\n${essay.content}`);
+            }
+        }
+        
+        // 显示筛选选项
+        function showFilterOptions() {
+            const filterOptions = ['全部', '议论文', '图表作文', '应用文'];
+            let filterHtml = filterOptions.map(option => 
+                `<div class="px-4 py-2 hover:bg-blue-50 cursor-pointer filter-option" data-type="${option}">${option}</div>`
+            ).join('');
+            
+            const dropdown = document.createElement('div');
+            dropdown.className = 'absolute mt-2 w-40 bg-white rounded-md shadow-lg z-50 border border-gray-200';
+            dropdown.innerHTML = filterHtml;
+            
+            const filterBtn = document.getElementById('filter-btn');
+            filterBtn.appendChild(dropdown);
+            
+            // 添加筛选事件
+            document.querySelectorAll('.filter-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    const type = this.getAttribute('data-type');
+                    filterEssays(type);
+                    dropdown.remove();
+                });
+            });
+            
+            // 点击外部关闭
+            document.addEventListener('click', function(e) {
+                if (!filterBtn.contains(e.target)) {
+                    dropdown.remove();
+                }
+            }, { once: true });
+        }
+        
+        // 筛选范文
+        function filterEssays(type) {
+            if (type === '全部') {
+                loadSampleEssays();
+                return;
+            }
+            
+            const filteredEssays = sampleEssays.filter(essay => essay.type === type);
+            const container = document.getElementById('sample-essays-container');
+            container.innerHTML = '';
+            
+            filteredEssays.forEach(essay => {
+                const essayCard = document.createElement('div');
+                essayCard.className = 'bg-white rounded-xl shadow-lg p-6 card-hover';
+                essayCard.innerHTML = `
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="px-3 py-1 bg-blue-50 text-primary text-sm rounded-full">${essay.type}</span>
+                        <span class="text-primary font-medium">得分：${essay.score}</span>
+                    </div>
+                    <h3 class="text-lg font-semibold text-secondary mb-3">${essay.title}</h3>
+                    <p class="text-gray-600 mb-4 line-clamp-3">${essay.excerpt}</p>
+                    <div class="flex justify-between items-center">
+                        <div class="flex gap-4 text-sm text-gray-500">
+                            <span>${essay.date}</span>
+                            <span>字数：${essay.wordCount}</span>
+                        </div>
+                        <a href="#" class="text-primary hover:text-secondary transition-colors flex items-center gap-2 text-sm view-essay" data-id="${essay.id}">
+                            查看详情 <i class="fas fa-arrow-right text-xs"></i>
+                        </a>
+                    </div>
+                `;
+                container.appendChild(essayCard);
+            });
+            
+            // 重新绑定查看详情事件
+            document.querySelectorAll('.view-essay').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const essayId = parseInt(this.getAttribute('data-id'));
+                    viewEssayDetails(essayId);
+                });
+            });
+        }
+        
+        // 显示排序选项
+        function showSortOptions() {
+            const sortOptions = [
+                { text: '按日期最新', value: 'date-desc' },
+                { text: '按日期最旧', value: 'date-asc' },
+                { text: '按分数最高', value: 'score-desc' },
+                { text: '按分数最低', value: 'score-asc' }
+            ];
+            
+            let sortHtml = sortOptions.map(option => 
+                `<div class="px-4 py-2 hover:bg-blue-50 cursor-pointer sort-option" data-value="${option.value}">${option.text}</div>`
+            ).join('');
+            
+            const dropdown = document.createElement('div');
+            dropdown.className = 'absolute mt-2 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200';
+            dropdown.innerHTML = sortHtml;
+            
+            const sortBtn = document.getElementById('sort-btn');
+            sortBtn.appendChild(dropdown);
+            
+            // 添加排序事件
+            document.querySelectorAll('.sort-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    const value = this.getAttribute('data-value');
+                    sortEssays(value);
+                    dropdown.remove();
+                });
+            });
+            
+            // 点击外部关闭
+            document.addEventListener('click', function(e) {
+                if (!sortBtn.contains(e.target)) {
+                    dropdown.remove();
+                }
+            }, { once: true });
+        }
+        
+        // 排序范文
+        function sortEssays(sortBy) {
+            let sortedEssays = [...sampleEssays];
+            
+            switch(sortBy) {
+                case 'date-desc':
+                    sortedEssays.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    break;
+                case 'date-asc':
+                    sortedEssays.sort((a, b) => new Date(a.date) - new Date(b.date));
+                    break;
+                case 'score-desc':
+                    sortedEssays.sort((a, b) => {
+                        const aScore = parseInt(a.score.split('/')[0]);
+                        const bScore = parseInt(b.score.split('/')[0]);
+                        return bScore - aScore;
+                    });
+                    break;
+                case 'score-asc':
+                    sortedEssays.sort((a, b) => {
+                        const aScore = parseInt(a.score.split('/')[0]);
+                        const bScore = parseInt(b.score.split('/')[0]);
+                        return aScore - bScore;
+                    });
+                    break;
+                default:
+                    break;
+            }
+            
+            const container = document.getElementById('sample-essays-container');
+            container.innerHTML = '';
+            
+            sortedEssays.slice(0, 4).forEach(essay => {
+                const essayCard = document.createElement('div');
+                essayCard.className = 'bg-white rounded-xl shadow-lg p-6 card-hover';
+                essayCard.innerHTML = `
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="px-3 py-1 bg-blue-50 text-primary text-sm rounded-full">${essay.type}</span>
+                        <span class="text-primary font-medium">得分：${essay.score}</span>
+                    </div>
+                    <h3 class="text-lg font-semibold text-secondary mb-3">${essay.title}</h3>
+                    <p class="text-gray-600 mb-4 line-clamp-3">${essay.excerpt}</p>
+                    <div class="flex justify-between items-center">
+                        <div class="flex gap-4 text-sm text-gray-500">
+                            <span>${essay.date}</span>
+                            <span>字数：${essay.wordCount}</span>
+                        </div>
+                        <a href="#" class="text-primary hover:text-secondary transition-colors flex items-center gap-2 text-sm view-essay" data-id="${essay.id}">
+                            查看详情 <i class="fas fa-arrow-right text-xs"></i>
+                        </a>
+                    </div>
+                `;
+                container.appendChild(essayCard);
+            });
+            
+            // 重新绑定查看详情事件
+            document.querySelectorAll('.view-essay').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const essayId = parseInt(this.getAttribute('data-id'));
+                    viewEssayDetails(essayId);
+                });
+            });
+        }
+    </script>
+</body>
+</html>
