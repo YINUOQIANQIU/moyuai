@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Level Test</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@400;500;700&family=Noto+Sans+SC:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2962FF',
+                        secondary: '#1A237E',
+                        success: '#4CAF50',
+                        error: '#F44336'
+                    },
+                    borderRadius: {
+                        'none': '0px',
+                        'sm': '2px',
+                        DEFAULT: '4px',
+                        'md': '8px',
+                        'lg': '12px',
+                        'xl': '16px',
+                        '2xl': '20px',
+                        '3xl': '24px',
+                        'full': '9999px',
+                        'button': '4px'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            min-height: 1024px;
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #F5F7FF;
+        }
+        .glass-effect {
+            backdrop-filter: blur(8px);
+            background-color: rgba(255, 255, 255, 0.95);
+        }
+        .timer-circle {
+            width: 60px;
+            height: 60px;
+        }
+        .question-transition {
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        .option-hover:hover {
+            background-color: #F5F7FF;
+            border-color: #2962FF;
+        }
+        .option-selected {
+            background-color: rgba(41, 98, 255, 0.1);
+            border: 2px solid #2962FF;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .warning {
+            animation: pulse 1s infinite;
+            color: '#F44336';
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .slide-up {
+            animation: slideUp 0.5s ease-out;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .dropdown-enter {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        .dropdown-enter-active {
+            opacity: 1;
+            transform: translateY(0);
+            transition: all 0.2s ease;
+        }
+        .dropdown-exit {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .dropdown-exit-active {
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.2s ease;
+        }
+        
+        /* 机械人助手样式 - 修改为趴在边栏上的样式 */
+        #robot-assistant-container {
+            position: fixed;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 60px;
+            height: 120px;
+            z-index: 1000;
+            pointer-events: auto;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+        
+        .robot-image-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .robot-image {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            border-radius: 50% 0 0 50%;
+            box-shadow: -4px 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            border: 2px solid white;
+            position: absolute;
+            right: 0;
+        }
+        
+        /* 消息气泡 - 调整位置 */
+        .robot-message {
+            position: absolute;
+            right: 90px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: white;
+            padding: 12px 16px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 240px;
+            font-size: 14px;
+            line-height: 1.4;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .robot-message:after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: -8px;
+            transform: translateY(-50%);
+            border-width: 8px;
+            border-style: solid;
+            border-color: transparent transparent transparent white;
+        }
+        
+        /* 动画效果 */
+        .talk-animation {
+            animation: talk 0.5s infinite alternate;
+        }
+        
+        .happy-animation {
+            animation: happy 1s ease;
+        }
+        
+        .sad-animation {
+            animation: sad 1s ease;
+        }
+        
+        .nod-animation {
+            animation: nod 0.5s ease;
+        }
+        
+        @keyframes talk {
+            0% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-3px) scale(1.05); }
+            100% { transform: translateY(0) scale(1); }
+        }
+        
+        @keyframes happy {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(10deg); }
+            50% { transform: rotate(-10deg); }
+            75% { transform: rotate(5deg); }
+        }
+        
+        @keyframes sad {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(5px); }
+        }
+        
+        @keyframes nod {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar (consistent with homepage) -->
+    <nav class="flex items-center justify-between px-6 lg:px-12 h-16 bg-white/90 backdrop-blur-md fixed top-0 left-0 right-0 z-50 border-b border-blue-50">
+        <div class="flex items-center gap-8 lg:gap-16">
+            <a href="墨语智学首页.html" class="flex items-center gap-3">
+                <span class="text-primary text-2xl font-bold tracking-tight">墨语智学</span>
+            </a>
+            <div class="hidden lg:flex items-center gap-8">
+                <a href="墨语智学计划.html" class="text-gray-700 hover:text-primary transition-colors font-medium">备考规划</a>
+                <a href="#" class="text-gray-700 hover:text-primary transition-colors font-medium">在线教学</a>
+                <a href="墨语智学真题.html" class="text-gray-700 hover:text-primary transition-colors font-medium">真题练习</a>
+                <a href="墨语智学社区.html" class="text-gray-700 hover:text-primary transition-colors font-medium">学习社区</a>
+            </div>
+        </div>
+        
+        <!-- Timer and Auth Section -->
+        <div class="flex items-center gap-4 lg:gap-6">
+            <div class="timer-circle relative flex items-center justify-center">
+                <svg class="absolute" viewBox="0 0 60 60">
+                    <circle cx="30" cy="30" r="28" fill="none" stroke="#E0E0E0" stroke-width="4"/>
+                    <circle cx="30" cy="30" r="28" fill="none" stroke="url(#gradient)" stroke-width="4" stroke-dasharray="175.9" stroke-dashoffset="44"/>
+                    <defs>
+                        <linearGradient id="gradient">
+                            <stop offset="0%" stop-color="#2962FF"/>
+                            <stop offset="100%" stop-color="#9C27B0"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <span id="timer" class="text-lg font-bold">10:00</span>
+            </div>
+            <div id="auth-section">
+                <div id="login-btn-container">
+                    <a href="墨语智学登录.html" id="login-btn" class="flex items-center px-4 lg:px-6 py-2 bg-blue-50 text-primary rounded-button hover:bg-blue-100 transition-colors">
+                        <span class="whitespace-nowrap font-medium text-sm lg:text-base">登录</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="pt-24 pb-16 max-w-[1440px] mx-auto px-6">
+        <!-- Test Selection Screen (Initial Screen) -->
+        <div id="test-selection-screen" class="bg-white rounded-xl shadow-lg p-8 max-w-3xl mx-auto">
+            <h1 class="text-2xl lg:text-3xl font-bold text-secondary mb-6 text-center">英语水平测试</h1>
+            <p class="text-gray-600 mb-8 text-center">请选择您的学习目标，我们将为您提供适合的测试题目</p>
+            
+            <div class="space-y-4 mb-8">
+                <div class="bg-blue-50 p-6 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors" onclick="startTest('cet4')">
+                    <h3 class="text-lg font-semibold text-secondary mb-2">大学英语四级 (CET-4)</h3>
+                    <p class="text-gray-600">适合准备参加大学英语四级考试的学生</p>
+                </div>
+                <div class="bg-blue-50 p-6 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors" onclick="startTest('cet6')">
+                    <h3 class="text-lg font-semibold text-secondary mb-2">大学英语六级 (CET-6)</h3>
+                    <p class="text-gray-600">适合准备参加大学英语六级考试的学生</p>
+                </div>
+                <div class="bg-blue-50 p-6 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors" onclick="startTest('general')">
+                    <h3 class="text-lg font-semibold text-secondary mb-2">通用英语能力测试</h3>
+                    <p class="text-gray-600">适合想评估自己英语水平的自学者</p>
+                </div>
+            </div>
+            
+            <div class="text-center text-gray-500 text-sm">
+                <p>测试包含10道题目，预计用时10分钟</p>
+            </div>
+        </div>
+
+        <!-- Test Screen (Hidden Initially) -->
+        <div id="test-screen" class="hidden">
+            <div class="flex gap-6">
+                <!-- Sidebar Navigation -->
+                <aside class="w-60 fixed top-24 bottom-0 bg-white border-r border-gray-200 overflow-y-auto">
+                    <nav class="p-4">
+                        <div class="mb-6">
+                            <h3 class="font-bold mb-3 text-gray-700">测试进度</h3>
+                            <div id="question-progress" class="space-y-2">
+                                <!-- Question progress indicators will be added here dynamically -->
+                            </div>
+                        </div>
+                    </nav>
+                </aside>
+
+                <!-- Main Test Content -->
+                <div class="ml-72 flex-1">
+                    <div id="question-container" class="bg-white rounded-lg p-6 shadow-lg">
+                        <!-- Questions will be loaded here dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Screen (Hidden Initially) -->
+        <div id="results-screen" class="hidden bg-white rounded-xl shadow-lg p-8 max-w-4xl mx-auto slide-up">
+            <h1 class="text-2xl lg:text-3xl font-bold text-secondary mb-6 text-center">测试结果</h1>
+            
+            <div class="flex flex-col lg:flex-row gap-8 mb-8">
+                <!-- Score Summary -->
+                <div class="lg:w-1/3 bg-blue-50 rounded-lg p-6 text-center">
+                    <div class="w-32 h-32 mx-auto mb-4 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center text-white text-4xl font-bold" id="score-display">
+                        0
+                    </div>
+                    <h3 class="text-xl font-semibold text-secondary mb-2">总分</h3>
+                    <p class="text-gray-600 mb-4" id="level-display">初级</p>
+                    <div class="h-px bg-gray-200 my-4"></div>
+                    <p class="text-gray-600 text-sm" id="test-type-display">通用英语能力测试</p>
+                </div>
+                
+                <!-- Skills Breakdown -->
+                <div class="lg:w-2/3">
+                    <h3 class="text-xl font-semibold text-secondary mb-4">能力分析</h3>
+                    <div class="h-64 mb-6">
+                        <canvas id="skills-chart"></canvas>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <h4 class="font-medium text-secondary mb-2">优势</h4>
+                            <ul id="strengths-list" class="list-disc pl-5 space-y-1 text-gray-600 text-sm">
+                                <!-- Strengths will be added here -->
+                            </ul>
+                        </div>
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <h4 class="font-medium text-secondary mb-2">待提升</h4>
+                            <ul id="weaknesses-list" class="list-disc pl-5 space-y-1 text-gray-600 text-sm">
+                                <!-- Weaknesses will be added here -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Detailed Results -->
+            <div class="mb-8">
+                <h3 class="text-xl font-semibold text-secondary mb-4">详细解析</h3>
+                <div id="question-results" class="space-y-4">
+                    <!-- Question results will be added here -->
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <button onclick="generateStudyPlan()" class="px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white rounded-button hover:opacity-90 flex items-center justify-center gap-2">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>生成学习计划</span>
+                </button>
+                <button onclick="restartTest()" class="px-6 py-3 bg-white text-primary border border-primary rounded-button hover:bg-blue-50 flex items-center justify-center gap-2">
+                    <i class="fas fa-redo"></i>
+                    <span>重新测试</span>
+                </button>
+                <button onclick="backToHome()" class="px-6 py-3 bg-white text-gray-700 border border-gray-300 rounded-button hover:bg-gray-50 flex items-center justify-center gap-2">
+                    <i class="fas fa-home"></i>
+                    <span>回到首页</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Study Plan Screen (Hidden Initially) -->
+        <div id="plan-screen" class="hidden bg-white rounded-xl shadow-lg p-8 max-w-4xl mx-auto slide-up">
+            <h1 class="text-2xl lg:text-3xl font-bold text-secondary mb-6 text-center">个性化学习计划</h1>
+            
+            <div class="mb-8">
+                <h3 class="text-xl font-semibold text-secondary mb-4">基于您的测试结果</h3>
+                <div class="bg-blue-50 p-4 rounded-lg mb-4">
+                    <div class="flex items-center gap-4">
+                        <div class="w-16 h-16 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center text-white text-2xl font-bold" id="plan-score-display">
+                            0
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-secondary" id="plan-level-display">初级水平</h4>
+                            <p class="text-gray-600 text-sm" id="plan-test-type-display">通用英语能力测试</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <h4 class="font-medium text-secondary mb-2">目标</h4>
+                        <p class="text-gray-600 text-sm" id="learning-goal">提升至中级英语水平</p>
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <h4 class="font-medium text-secondary mb-2">预计时间</h4>
+                        <p class="text-gray-600 text-sm" id="estimated-time">8周</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-8">
+                <h3 class="text-xl font-semibold text-secondary mb-4">每周学习计划</h3>
+                <div id="weekly-plan" class="space-y-4">
+                    <!-- Weekly plan will be added here -->
+                </div>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <button onclick="downloadPlan()" class="px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white rounded-button hover:opacity-90 flex items-center justify-center gap-2">
+                    <i class="fas fa-download"></i>
+                    <span>下载计划</span>
+                </button>
+                <button onclick="backToResults()" class="px-6 py-3 bg-white text-primary border border-primary rounded-button hover:bg-blue-50 flex items-center justify-center gap-2">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>返回结果</span>
+                </button>
+                <button onclick="backToHome()" class="px-6 py-3 bg-white text-gray-700 border border-gray-300 rounded-button hover:bg-gray-50 flex items-center justify-center gap-2">
+                    <i class="fas fa-home"></i>
+                    <span>回到首页</span>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- 机械人助手容器 - 修改为趴在边栏上的样式 -->
+    <div id="robot-assistant-container">
+        <div class="robot-image-container">
+            <img src="https://imgur.la/images/2025/06/08/AB9D66DF1072932D11D8D306BE46693C.jpg" alt="小助手" class="robot-image">
+        </div>
+        <div class="robot-message"></div>
+    </div>
+
+    <script>
+        // 内嵌的auth模块
+        const authModule = (function() {
+            // 用户数据存储键名
+            const USER_STORAGE_KEY = 'moyu_user';
+            
+            // DOM元素ID常量
+            const AUTH_SECTION_ID = 'auth-section';
+            const LOGIN_BTN_CONTAINER_ID = 'login-btn-container';
+            
+            // 当前用户数据
+            let currentUser = null;
+            
+            // 初始化函数 - 在所有页面加载时调用
+            function initialize() {
+                // 从本地存储加载用户数据
+                loadUserData();
+                
+                // 更新UI
+                updateAuthUI();
+            }
+            
+            // 加载用户数据
+            function loadUserData() {
+                const userData = localStorage.getItem(USER_STORAGE_KEY);
+                if (userData) {
+                    currentUser = JSON.parse(userData);
+                }
+            }
+            
+            // 保存用户数据
+            function saveUserData(user) {
+                localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+                currentUser = user;
+            }
+            
+            // 清除用户数据
+            function clearUserData() {
+                localStorage.removeItem(USER_STORAGE_KEY);
+                currentUser = null;
+            }
+            
+            // 处理登录
+            function handleLogin(userData) {
+                saveUserData(userData);
+                updateAuthUI();
+            }
+            
+            // 处理登出
+            function handleLogout() {
+                clearUserData();
+                updateAuthUI();
+            }
+            
+            // 检查登录状态
+            function isLoggedIn() {
+                return currentUser !== null;
+            }
+            
+            // 获取当前用户
+            function getCurrentUser() {
+                return currentUser;
+            }
+            
+            // 更新认证UI
+            function updateAuthUI() {
+                const authSection = document.getElementById(AUTH_SECTION_ID);
+                const loginBtnContainer = document.getElementById(LOGIN_BTN_CONTAINER_ID);
+                
+                if (!loginBtnContainer) return;
+                
+                // 清除现有内容
+                loginBtnContainer.innerHTML = '';
+                
+                if (isLoggedIn()) {
+                    // 创建用户头像和下拉菜单
+                    createUserDropdown(loginBtnContainer);
+                } else {
+                    // 创建登录按钮
+                    createLoginButton(loginBtnContainer);
+                }
+            }
+            
+            // 创建登录按钮
+            function createLoginButton(container) {
+                const loginBtn = document.createElement('a');
+                loginBtn.href = '墨语智学登录.html';
+                loginBtn.className = 'flex items-center px-4 lg:px-6 py-2 bg-blue-50 text-primary rounded-button hover:bg-blue-100 transition-colors';
+                loginBtn.innerHTML = '<span class="whitespace-nowrap font-medium text-sm lg:text-base">登录</span>';
+                
+                container.appendChild(loginBtn);
+            }
+            
+            // 创建用户下拉菜单
+            function createUserDropdown(container) {
+                // 用户头像按钮
+                const avatarBtn = document.createElement('div');
+                avatarBtn.className = 'relative group';
+                avatarBtn.id = 'user-dropdown';
+                
+                // 头像图片
+                const avatarImg = document.createElement('img');
+                avatarImg.src = currentUser.avatar || 'https://imgur.la/images/2025/06/07/94B2FFC12D41C799B69B2668BBA16BE7.jpg';
+                avatarImg.alt = currentUser.name || '用户';
+                avatarImg.className = 'w-8 h-8 rounded-full cursor-pointer object-cover';
+                avatarImg.style.minWidth = '32px';
+                
+                // 下拉菜单
+                const dropdownMenu = document.createElement('div');
+                dropdownMenu.className = 'absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 origin-top-right transform transition-all duration-200 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100';
+                dropdownMenu.style.transformOrigin = 'top right';
+                
+                dropdownMenu.innerHTML = `
+                    <div class="py-1" role="menu" aria-orientation="vertical">
+                        <div class="px-4 py-2 border-b border-gray-100">
+                            <p class="text-sm font-medium text-gray-900">${currentUser.name || '用户'}</p>
+                            <p class="text-xs text-gray-500">${currentUser.username || ''}</p>
+                        </div>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-primary transition-colors" role="menuitem">
+                            <i class="fas fa-user mr-2"></i>个人中心
+                        </a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-primary transition-colors" role="menuitem">
+                            <i class="fas fa-cog mr-2"></i>设置
+                        </a>
+                        <a href="#" id="logout-btn" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-primary transition-colors" role="menuitem">
+                            <i class="fas fa-sign-out-alt mr-2"></i>退出登录
+                        </a>
+                    </div>
+                `;
+                
+                avatarBtn.appendChild(avatarImg);
+                avatarBtn.appendChild(dropdownMenu);
+                container.appendChild(avatarBtn);
+                
+                // 添加登出按钮事件
+                const logoutBtn = dropdownMenu.querySelector('#logout-btn');
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        handleLogout();
+                    });
+                }
+                
+                // 点击外部关闭菜单
+                document.addEventListener('click', function(e) {
+                    if (!avatarBtn.contains(e.target)) {
+                        dropdownMenu.classList.remove('opacity-100', 'scale-100');
+                        dropdownMenu.classList.add('opacity-0', 'scale-95');
+                    }
+                });
+            }
+            
+            // 公共API
+            return {
+                initialize,
+                handleLogin,
+                handleLogout,
+                isLoggedIn,
+                getCurrentUser
+            };
+        })();
+
+        // 可爱的机械人助手类 - 针对测试界面定制
+        class TestRobotAssistant {
+            constructor(containerId) {
+                this.container = document.getElementById(containerId);
+                if (!this.container) return;
+
+                // 创建机械人元素 - 使用图片
+                this.container.innerHTML = `
+                    <div class="robot-image-container">
+                        <img src="https://imgur.la/images/2025/06/08/AB9D66DF1072932D11D8D306BE46693C.jpg" alt="小助手" class="robot-image">
+                    </div>
+                    <div class="robot-message"></div>
+                `;
+
+                // 配置 - 针对测试界面的消息
+                this.config = {
+                    position: 'right-middle',
+                    reactions: {
+                        positive: true,
+                        negative: true,
+                        encouragement: true
+                    },
+                    messages: [
+                        "需要帮助解答测试问题吗？",
+                        "点击我可以获得测试提示哦~",
+                        "我在这里帮你完成测试！",
+                        "有什么测试问题尽管问我吧！",
+                        "你的测试进度很不错，继续加油！",
+                        "遇到难题了吗？我可以帮你分析！",
+                        "测试时间还充足，别着急！",
+                        "记得检查你的答案哦！"
+                    ]
+                };
+
+                // 设置初始位置
+                this.setPosition(this.config.position);
+                
+                // 添加点击事件
+                this.container.addEventListener('click', () => {
+                    this.showRandomMessage(4000);
+                    this.startTalkingAnimation();
+                });
+
+                // 初始动画
+                this.playHappyAnimation();
+            }
+
+            // 设置位置
+            setPosition(position) {
+                const positions = {
+                    'right-bottom': { 
+                        right: '24px',
+                        bottom: '24px'
+                    },
+                    'right-middle': {
+                        right: '0',
+                        top: '50%',
+                        transform: 'translateY(-50%)'
+                    },
+                    'bottom-right': { right: '20px', bottom: '20px' },
+                    'bottom-left': { left: '20px', bottom: '20px' },
+                    'top-right': { right: '20px', top: '20px' },
+                    'top-left': { left: '20px', top: '20px' }
+                };
+                
+                if (positions[position]) {
+                    Object.assign(this.container.style, {
+                        position: 'fixed',
+                        ...positions[position],
+                        zIndex: '1000',
+                        pointerEvents: 'auto'
+                    });
+                    this.config.position = position;
+                }
+            }
+
+            // 显示随机消息
+            showRandomMessage(duration = 3000) {
+                const randomIndex = Math.floor(Math.random() * this.config.messages.length);
+                this.showMessage(this.config.messages[randomIndex], duration);
+            }
+
+            // 显示消息
+            showMessage(message, duration = 3000) {
+                // 创建或获取消息元素
+                if (!this.messageElement) {
+                    this.messageElement = this.container.querySelector('.robot-message');
+                }
+                
+                this.messageElement.textContent = message;
+                this.messageElement.style.display = 'block';
+                
+                // 添加动画效果
+                this.startTalkingAnimation();
+                
+                if (duration > 0) {
+                    setTimeout(() => {
+                        this.hideMessage();
+                        this.stopTalkingAnimation();
+                    }, duration);
+                }
+            }
+
+            hideMessage() {
+                if (this.messageElement) {
+                    this.messageElement.style.display = 'none';
+                }
+            }
+
+            // 开始说话动画
+            startTalkingAnimation() {
+                const image = this.container.querySelector('.robot-image');
+                image.classList.add('talk-animation');
+            }
+
+            // 停止说话动画
+            stopTalkingAnimation() {
+                const image = this.container.querySelector('.robot-image');
+                image.classList.remove('talk-animation');
+            }
+
+            // 响应正面反馈
+            reactPositive() {
+                if (this.config.reactions.positive) {
+                    this.showMessage('做得很好！继续保持！', 2000);
+                    this.playHappyAnimation();
+                }
+            }
+
+            // 响应负面反馈
+            reactNegative() {
+                if (this.config.reactions.negative) {
+                    this.showMessage('别灰心，继续努力！', 2000);
+                    this.playSadAnimation();
+                }
+            }
+
+            // 鼓励用户
+            encourage() {
+                if (this.config.reactions.encouragement) {
+                    this.showMessage('你可以的！加油！', 2000);
+                    this.playHappyAnimation();
+                }
+            }
+
+            // 播放开心动画
+            playHappyAnimation() {
+                const image = this.container.querySelector('.robot-image');
+                image.classList.add('happy-animation');
+                
+                setTimeout(() => {
+                    image.classList.remove('happy-animation');
+                }, 2000);
+            }
+
+            // 播放难过动画
+            playSadAnimation() {
+                const image = this.container.querySelector('.robot-image');
+                image.classList.add('sad-animation');
+                
+                setTimeout(() => {
+                    image.classList.remove('sad-animation');
+                }, 2000);
+            }
+
+            // 点头动画
+            playNodAnimation() {
+                const image = this.container.querySelector('.robot-image');
+                image.classList.add('nod-animation');
+                
+                setTimeout(() => {
+                    image.classList.remove('nod-animation');
+                }, 1000);
+            }
+
+            // 响应消息
+            respondToMessage(message, sender) {
+                if (sender === 'user') {
+                    // 分析用户消息情绪
+                    const positiveWords = ['谢谢', '很好', '帮助', '喜欢', '棒'];
+                    const negativeWords = ['错误', '不懂', '不会', '困难', '问题'];
+                    
+                    if (positiveWords.some(word => message.includes(word))) {
+                        this.reactPositive();
+                    } else if (negativeWords.some(word => message.includes(word))) {
+                        this.reactNegative();
+                    } else if (Math.random() > 0.7) {
+                        this.encourage();
+                    }
+                } else if (sender === 'ai') {
+                    // AI回复时点头
+                    this.playNodAnimation();
+                }
+            }
+        }
+
+        // Test configuration
+        const testConfig = {
+            cet4: {
+                name: "大学英语四级 (CET-4)",
+                questions: [
+                    {
+                        id: 1,
+                        question: "Choose the correct form of the verb to complete the sentence:",
+                        text: "Sarah usually _____ to work by bus, but this week she _____ her car because it's raining.",
+                        options: [
+                            { text: "goes / is driving", correct: true },
+                            { text: "is going / drives", correct: false },
+                            { text: "go / is driving", correct: false },
+                            { text: "going / drives", correct: false }
+                        ],
+                        explanation: "The first blank requires the present simple tense for habitual actions ('goes'), and the second blank requires the present continuous tense for temporary actions happening now ('is driving').",
+                        category: "Grammar",
+                        skill: "Tenses"
+                    },
+                    {
+                        id: 2,
+                        question: "Select the most appropriate word to complete the sentence:",
+                        text: "The new policy has had a significant _____ on small businesses.",
+                        options: [
+                            { text: "affect", correct: false },
+                            { text: "effect", correct: true },
+                            { text: "affection", correct: false },
+                            { text: "effective", correct: false }
+                        ],
+                        explanation: "'Effect' is a noun meaning 'result', which fits this context. 'Affect' is a verb meaning 'influence', which would be grammatically incorrect here.",
+                        category: "Vocabulary",
+                        skill: "Word Choice"
+                    },
+                    {
+                        id: 3,
+                        question: "Choose the correct preposition to complete the sentence:",
+                        text: "I'm really looking forward _____ your party next week.",
+                        options: [
+                            { text: "at", correct: false },
+                            { text: "for", correct: false },
+                            { text: "to", correct: true },
+                            { text: "on", correct: false }
+                        ],
+                        explanation: "The correct phrase is 'look forward to' which means to anticipate with pleasure.",
+                        category: "Grammar",
+                        skill: "Prepositions"
+                    },
+                    {
+                        id: 4,
+                        question: "Identify the sentence with correct punctuation:",
+                        options: [
+                            { text: "The students, who studied hard, passed the exam.", correct: false },
+                            { text: "The students who studied hard passed the exam.", correct: true },
+                            { text: "The students, who studied hard passed the exam.", correct: false },
+                            { text: "The students who studied hard, passed the exam.", correct: false }
+                        ],
+                        explanation: "No commas are needed because 'who studied hard' is a restrictive clause essential to the meaning of the sentence.",
+                        category: "Writing",
+                        skill: "Punctuation"
+                    },
+                    {
+                        id: 5,
+                        question: "Choose the best response to complete the conversation:",
+                        text: "A: 'I think I left my wallet at home.'<br>B: '_____ I can lend you some money if you need.'",
+                        options: [
+                            { text: "Don't worry!", correct: true },
+                            { text: "No problem!", correct: false },
+                            { text: "You're welcome!", correct: false },
+                            { text: "Never mind!", correct: false }
+                        ],
+                        explanation: "'Don't worry!' is the most appropriate response to reassure someone in this situation.",
+                        category: "Speaking",
+                        skill: "Conversational English"
+                    },
+                    {
+                        id: 6,
+                        question: "Select the correct passive form of the sentence:",
+                        text: "Someone has stolen my bicycle.",
+                        options: [
+                            { text: "My bicycle has been stolen by someone.", correct: true },
+                            { text: "My bicycle was stolen by someone.", correct: false },
+                            { text: "My bicycle is stolen by someone.", correct: false },
+                            { text: "My bicycle had been stolen by someone.", correct: false }
+                        ],
+                        explanation: "The present perfect tense in active voice ('has stolen') becomes 'has been stolen' in passive voice.",
+                        category: "Grammar",
+                        skill: "Passive Voice"
+                    },
+                    {
+                        id: 7,
+                        question: "Choose the word that best fits the blank:",
+                        text: "The _____ of the novel was so complex that I had to read it twice to understand it.",
+                        options: [
+                            { text: "plot", correct: true },
+                            { text: "script", correct: false },
+                            { text: "play", correct: false },
+                            { text: "drama", correct: false }
+                        ],
+                        explanation: "'Plot' refers to the main events of a novel, which fits this context. The other options refer to other types of writing or performance.",
+                        category: "Vocabulary",
+                        skill: "Literary Terms"
+                    },
+                    {
+                        id: 8,
+                        question: "Identify the grammatically correct sentence:",
+                        options: [
+                            { text: "Neither the teacher nor the students was prepared for the fire drill.", correct: false },
+                            { text: "Neither the teacher nor the students were prepared for the fire drill.", correct: true },
+                            { text: "Neither the teacher or the students were prepared for the fire drill.", correct: false },
+                            { text: "Neither the teacher nor the students is prepared for the fire drill.", correct: false }
+                        ],
+                        explanation: "With 'neither...nor', the verb agrees with the noun closest to it ('students' is plural, so 'were' is correct).",
+                        category: "Grammar",
+                        skill: "Subject-Verb Agreement"
+                    },
+                    {
+                        id: 9,
+                        question: "Choose the correct meaning of the idiom:",
+                        text: "To 'hit the nail on the head' means to:",
+                        options: [
+                            { text: "Do something with great force", correct: false },
+                            { text: "Be exactly right about something", correct: true },
+                            { text: "Make a serious mistake", correct: false },
+                            { text: "Waste time on unimportant details", correct: false }
+                        ],
+                        explanation: "The idiom 'hit the nail on the head' means to describe exactly what is causing a situation or problem.",
+                        category: "Vocabulary",
+                        skill: "Idioms"
+                    },
+                    {
+                        id: 10,
+                        question: "Select the most appropriate concluding sentence for this paragraph:",
+                        text: "Many people believe that learning a second language is only useful for traveling or communicating with foreigners. However, studies have shown that bilingualism has cognitive benefits as well. _____",
+                        options: [
+                            { text: "Therefore, everyone should learn at least one foreign language.", correct: false },
+                            { text: "For example, it can improve memory and problem-solving skills.", correct: true },
+                            { text: "Some people prefer to learn languages online rather than in classrooms.", correct: false },
+                            { text: "Traveling abroad is an exciting experience for many people.", correct: false }
+                        ],
+                        explanation: "This option provides a specific example of cognitive benefits, which is the most appropriate conclusion for this paragraph.",
+                        category: "Writing",
+                        skill: "Paragraph Structure"
+                    }
+                ]
+            },
+            cet6: {
+                name: "大学英语六级 (CET-6)",
+                questions: [
+                    // Similar structure but more advanced questions for CET-6
+                    // (omitted for brevity, would be implemented similarly)
+                ]
+            },
+            general: {
+                name: "通用英语能力测试",
+                questions: [
+                    // Similar structure but general English questions
+                    // (omitted for brevity, would be implemented similarly)
+                ]
+            }
+        };
+
+        // Test state variables
+        let currentTest = null;
+        let currentQuestionIndex = 0;
+        let userAnswers = [];
+        let timerInterval;
+        let timeLeft = 600; // 10 minutes in seconds
+        let robotAssistant = null;
+
+        // DOM elements
+        const testSelectionScreen = document.getElementById('test-selection-screen');
+        const testScreen = document.getElementById('test-screen');
+        const resultsScreen = document.getElementById('results-screen');
+        const planScreen = document.getElementById('plan-screen');
+        const questionContainer = document.getElementById('question-container');
+        const questionProgress = document.getElementById('question-progress');
+        const timerDisplay = document.getElementById('timer');
+        
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化auth模块
+            authModule.initialize();
+            
+            // 初始化机械人助手
+            robotAssistant = new TestRobotAssistant('robot-assistant-container');
+            
+            // 显示欢迎消息
+            setTimeout(() => {
+                robotAssistant.showRandomMessage(3000);
+            }, 2000);
+        });
+
+        // Start test function
+        function startTest(testType) {
+            currentTest = testConfig[testType];
+            currentQuestionIndex = 0;
+            userAnswers = [];
+            
+            // Reset timer
+            timeLeft = 600;
+            updateTimerDisplay();
+            clearInterval(timerInterval);
+            timerInterval = setInterval(updateTimer, 1000);
+            
+            // Show test screen
+            testSelectionScreen.classList.add('hidden');
+            testScreen.classList.remove('hidden');
+            
+            // Initialize question progress
+            initializeQuestionProgress();
+            
+            // Load first question
+            loadQuestion(currentQuestionIndex);
+            
+            // Show test start message
+            robotAssistant.showMessage('测试开始了！加油哦！', 3000);
+        }
+        
+        // Initialize question progress indicators
+        function initializeQuestionProgress() {
+            questionProgress.innerHTML = '';
+            currentTest.questions.forEach((q, index) => {
+                const progressItem = document.createElement('div');
+                progressItem.className = `flex items-center gap-3 p-2 rounded-md cursor-pointer ${index === 0 ? 'bg-blue-50 border-l-4 border-primary' : ''}`;
+                progressItem.innerHTML = `
+                    <span class="w-7 h-7 rounded-full ${index === 0 ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600'} flex items-center justify-center text-sm">${index + 1}</span>
+                    <span class="text-sm">${q.category}</span>
+                `;
+                progressItem.onclick = () => navigateToQuestion(index);
+                questionProgress.appendChild(progressItem);
+            });
+        }
+        
+        // Load question function
+        function loadQuestion(index) {
+            if (index < 0 || index >= currentTest.questions.length) return;
+            
+            currentQuestionIndex = index;
+            const question = currentTest.questions[index];
+            
+            // Update progress indicators
+            const progressItems = questionProgress.querySelectorAll('div');
+            progressItems.forEach((item, i) => {
+                if (i === index) {
+                    item.classList.add('bg-blue-50', 'border-l-4', 'border-primary');
+                    item.querySelector('span').classList.add('bg-primary', 'text-white');
+                    item.querySelector('span').classList.remove('bg-gray-100', 'text-gray-600');
+                } else {
+                    item.classList.remove('bg-blue-50', 'border-l-4', 'border-primary');
+                    item.querySelector('span').classList.remove('bg-primary', 'text-white');
+                    item.querySelector('span').classList.add('bg-gray-100', 'text-gray-600');
+                }
+                
+                // Mark answered questions
+                if (userAnswers[i] !== undefined) {
+                    item.querySelector('span').classList.add('bg-green-100', 'text-green-600');
+                }
+            });
+            
+            // Build question HTML
+            let questionHTML = `
+                <div class="flex items-start gap-4 mb-6">
+                    <span class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-lg shrink-0">${index + 1}</span>
+                    <div>
+                        <h2 class="text-lg font-medium mb-4">${question.question}</h2>
+                        ${question.text ? `<p class="text-gray-700 mb-6">${question.text}</p>` : ''}
+                        
+                        <div class="space-y-4" id="options-container">
+            `;
+            
+            question.options.forEach((option, i) => {
+                const isSelected = userAnswers[index] === i;
+                questionHTML += `
+                    <label class="flex items-center gap-3 p-3 border rounded-md option-hover cursor-pointer ${isSelected ? 'option-selected' : ''}">
+                        <input type="radio" name="q${index}" value="${i}" class="w-5 h-5 text-primary" ${isSelected ? 'checked' : ''}>
+                        <span>${option.text}</span>
+                    </label>
+                `;
+            });
+            
+            questionHTML += `
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center justify-between mt-8">
+                    <button onclick="prevQuestion()" class="flex items-center gap-2 px-4 py-2 border border-gray-300 !rounded-button hover:bg-gray-50" ${index === 0 ? 'disabled' : ''}>
+                        <i class="fas fa-arrow-left"></i>
+                        Previous
+                    </button>
+                    <button id="star-btn" class="text-yellow-500 hover:text-yellow-600">
+                        <i class="far fa-star text-xl"></i>
+                    </button>
+                    <button onclick="nextQuestion()" class="flex items-center gap-2 px-4 py-2 bg-primary text-white !rounded-button hover:bg-blue-600">
+                        ${index === currentTest.questions.length - 1 ? 'Submit Test' : 'Next'}
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            `;
+            
+            questionContainer.innerHTML = questionHTML;
+            
+            // Add event listeners to options
+            document.querySelectorAll('#options-container input').forEach(input => {
+                input.addEventListener('change', function() {
+                    userAnswers[index] = parseInt(this.value);
+                    
+                    // Update progress indicator
+                    progressItems[index].querySelector('span').classList.add('bg-green-100', 'text-green-600');
+                    
+                    // Show positive feedback
+                    if (question.options[userAnswers[index]].correct) {
+                        robotAssistant.reactPositive();
+                    }
+                });
+            });
+        }
+        
+        // Navigation functions
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                loadQuestion(currentQuestionIndex - 1);
+            }
+        }
+        
+        function nextQuestion() {
+            // Save answer if selected
+            const selectedOption = document.querySelector(`input[name="q${currentQuestionIndex}"]:checked`);
+            if (selectedOption) {
+                userAnswers[currentQuestionIndex] = parseInt(selectedOption.value);
+            }
+            
+            if (currentQuestionIndex < currentTest.questions.length - 1) {
+                loadQuestion(currentQuestionIndex + 1);
+            } else {
+                submitTest();
+            }
+        }
+        
+        function navigateToQuestion(index) {
+            loadQuestion(index);
+        }
+        
+        // Timer functions
+        function updateTimer() {
+            timeLeft--;
+            updateTimerDisplay();
+            
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                submitTest();
+            }
+            
+            // Show time warning
+            if (timeLeft === 60) {
+                robotAssistant.showMessage('还剩1分钟，请抓紧时间！', 3000);
+            }
+        }
+        
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerDisplay.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            
+            if (timeLeft <= 60) {
+                timerDisplay.classList.add('warning');
+            } else {
+                timerDisplay.classList.remove('warning');
+            }
+        }
+        
+        // Submit test function
+        function submitTest() {
+            clearInterval(timerInterval);
+            
+            // Calculate score
+            let score = 0;
+            const results = [];
+            
+            currentTest.questions.forEach((q, index) => {
+                const userAnswer = userAnswers[index];
+                const isCorrect = userAnswer !== undefined && q.options[userAnswer].correct;
+                
+                if (isCorrect) {
+                    score += 10; // Each question worth 10 points
+                }
+                
+                results.push({
+                    question: q,
+                    userAnswer: userAnswer !== undefined ? userAnswer : null,
+                    isCorrect: isCorrect
+                });
+            });
+            
+            // Determine level
+            let level = "";
+            if (score >= 90) level = "高级";
+            else if (score >= 70) level = "中级";
+            else if (score >= 50) level = "初级";
+            else level = "入门";
+            
+            // Show results
+            showResults(score, level, results);
+            
+            // Show result message
+            if (score >= 70) {
+                robotAssistant.showMessage(`恭喜你获得了${score}分！成绩不错！`, 3000);
+                robotAssistant.playHappyAnimation();
+            } else {
+                robotAssistant.showMessage(`你的得分是${score}分，继续努力哦！`, 3000);
+                robotAssistant.encourage();
+            }
+        }
+        
+        // Show results function
+        function showResults(score, level, results) {
+            testScreen.classList.add('hidden');
+            resultsScreen.classList.remove('hidden');
+            
+            // Update score display
+            document.getElementById('score-display').textContent = score;
+            document.getElementById('level-display').textContent = level;
+            document.getElementById('test-type-display').textContent = currentTest.name;
+            
+            // Generate skills breakdown
+            generateSkillsChart(results);
+            
+            // Show question results
+            const questionResultsContainer = document.getElementById('question-results');
+            questionResultsContainer.innerHTML = '';
+            
+            results.forEach((result, index) => {
+                const question = result.question;
+                const userAnswer = result.userAnswer !== null ? question.options[result.userAnswer].text : "未作答";
+                const correctAnswer = question.options.find(opt => opt.correct).text;
+                
+                const resultItem = document.createElement('div');
+                resultItem.className = `bg-blue-50 p-4 rounded-lg ${result.isCorrect ? 'border-l-4 border-success' : 'border-l-4 border-error'}`;
+                resultItem.innerHTML = `
+                    <div class="flex items-start gap-3">
+                        <span class="w-7 h-7 rounded-full ${result.isCorrect ? 'bg-success text-white' : 'bg-error text-white'} flex items-center justify-center text-sm shrink-0">${index + 1}</span>
+                        <div>
+                            <h4 class="font-medium text-secondary mb-2">${question.question}</h4>
+                            ${question.text ? `<p class="text-gray-700 mb-3">${question.text}</p>` : ''}
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                                <div>
+                                    <p class="text-sm text-gray-600 mb-1">您的答案:</p>
+                                    <p class="${result.isCorrect ? 'text-success' : 'text-error'}">${userAnswer}</p>
+                                </div>
+                                ${!result.isCorrect ? `
+                                <div>
+                                    <p class="text-sm text-gray-600 mb-1">正确答案:</p>
+                                    <p class="text-success">${correctAnswer}</p>
+                                </div>
+                                ` : ''}
+                            </div>
+                            
+                            <div class="bg-white p-3 rounded border border-gray-200">
+                                <p class="text-sm text-gray-600"><strong>解析:</strong> ${question.explanation}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                questionResultsContainer.appendChild(resultItem);
+            });
+            
+            // Determine strengths and weaknesses
+            const skills = {};
+            results.forEach(result => {
+                if (!skills[result.question.skill]) {
+                    skills[result.question.skill] = { correct: 0, total: 0 };
+                }
+                skills[result.question.skill].total++;
+                if (result.isCorrect) {
+                    skills[result.question.skill].correct++;
+                }
+            });
+            
+            const strengthsList = document.getElementById('strengths-list');
+            const weaknessesList = document.getElementById('weaknesses-list');
+            strengthsList.innerHTML = '';
+            weaknessesList.innerHTML = '';
+            
+            Object.entries(skills).forEach(([skill, data]) => {
+                const percentage = (data.correct / data.total) * 100;
+                if (percentage >= 70) {
+                    strengthsList.innerHTML += `<li>${skill} (${Math.round(percentage)}%)</li>`;
+                } else {
+                    weaknessesList.innerHTML += `<li>${skill} (${Math.round(percentage)}%)</li>`;
+                }
+            });
+        }
+        
+        // Generate skills chart
+        function generateSkillsChart(results) {
+            const skills = {};
+            results.forEach(result => {
+                if (!skills[result.question.category]) {
+                    skills[result.question.category] = { correct: 0, total: 0 };
+                }
+                skills[result.question.category].total++;
+                if (result.isCorrect) {
+                    skills[result.question.category].correct++;
+                }
+            });
+            
+            const ctx = document.getElementById('skills-chart').getContext('2d');
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(skills),
+                    datasets: [{
+                        data: Object.values(skills).map(s => (s.correct / s.total) * 100),
+                        backgroundColor: [
+                            '#2962FF',
+                            '#1A237E',
+                            '#4CAF50',
+                            '#9C27B0',
+                            '#FF9800'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const skillData = skills[context.label];
+                                    return `${label}: ${value.toFixed(1)}% (${skillData.correct}/${skillData.total})`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Generate study plan
+        function generateStudyPlan() {
+            resultsScreen.classList.add('hidden');
+            planScreen.classList.remove('hidden');
+            
+            // Update plan header
+            const score = parseInt(document.getElementById('score-display').textContent);
+            const level = document.getElementById('level-display').textContent;
+            const testType = document.getElementById('test-type-display').textContent;
+            
+            document.getElementById('plan-score-display').textContent = score;
+            document.getElementById('plan-level-display').textContent = level;
+            document.getElementById('plan-test-type-display').textContent = testType;
+            
+            // Determine learning goal and estimated time
+            let goal = "";
+            let time = "";
+            if (score >= 90) {
+                goal = "保持高级英语水平并进一步提升专业领域英语能力";
+                time = "4周";
+            } else if (score >= 70) {
+                goal = "提升至高级英语水平";
+                time = "6周";
+            } else if (score >= 50) {
+                goal = "提升至中级英语水平";
+                time = "8周";
+            } else {
+                goal = "建立英语基础并提升至初级水平";
+                time = "12周";
+            }
+            
+            document.getElementById('learning-goal').textContent = goal;
+            document.getElementById('estimated-time').textContent = time;
+            
+            // Generate weekly plan
+            const weeklyPlan = document.getElementById('weekly-plan');
+            weeklyPlan.innerHTML = '';
+            
+            const weeks = time.match(/\d+/)[0];
+            for (let i = 1; i <= weeks; i++) {
+                const weekPlan = document.createElement('div');
+                weekPlan.className = 'bg-blue-50 p-4 rounded-lg';
+                weekPlan.innerHTML = `
+                    <h4 class="font-medium text-secondary mb-3">第 ${i} 周</h4>
+                    <ul class="list-disc pl-5 space-y-1 text-gray-600 text-sm">
+                        <li>完成${score < 70 ? '基础' : '高级'}语法练习 (3次)</li>
+                        <li>阅读${score < 70 ? '短篇' : '长篇'}英语文章 (2篇)</li>
+                        <li>听力练习 (${score < 70 ? '30' : '60'}分钟)</li>
+                        ${i % 2 === 0 ? '<li>写作练习 (1篇)</li>' : ''}
+                        ${i > 2 ? '<li>模拟测试 (1次)</li>' : ''}
+                    </ul>
+                `;
+                weeklyPlan.appendChild(weekPlan);
+            }
+            
+            // Show plan message
+            robotAssistant.showMessage('已为你生成了个性化学习计划！', 3000);
+        }
+        
+        // Download plan function
+        function downloadPlan() {
+            alert('学习计划下载功能将在完整版中实现');
+            robotAssistant.showMessage('下载功能即将上线，敬请期待！', 3000);
+        }
+        
+        // Back to results function
+        function backToResults() {
+            planScreen.classList.add('hidden');
+            resultsScreen.classList.remove('hidden');
+        }
+        
+        // Restart test function
+        function restartTest() {
+            resultsScreen.classList.add('hidden');
+            testSelectionScreen.classList.remove('hidden');
+            robotAssistant.showMessage('准备好重新测试了吗？这次会更好！', 3000);
+        }
+
+        // Back to home function
+        function backToHome() {
+            window.location.href = '墨语智学首页.html';
+        }
+    </script>
+</body>
+</html>

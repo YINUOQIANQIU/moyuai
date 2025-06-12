@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI视频课程 - 墨语智学</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2962FF',
+                        secondary: '#1A237E',
+                        success: '#4CAF50',
+                        error: '#F44336'
+                    },
+                    borderRadius: {
+                        'none': '0px',
+                        'sm': '2px',
+                        DEFAULT: '4px',
+                        'md': '8px',
+                        'lg': '12px',
+                        'xl': '16px',
+                        '2xl': '20px',
+                        '3xl': '24px',
+                        'full': '9999px',
+                        'button': '4px'
+                    },
+                    fontFamily: {
+                        'sans': ['Poppins', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            min-height: 1024px;
+            font-family: 'Poppins', sans-serif;
+            background-color: #F5F7FF;
+        }
+        .glass-effect {
+            backdrop-filter: blur(8px);
+            background-color: rgba(255, 255, 255, 0.95);
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+        }
+        .progress-rainbow {
+            background: linear-gradient(90deg, #2962FF 0%, #1A237E 50%, #4CAF50 100%);
+        }
+        .difficulty-meter {
+            background: linear-gradient(180deg, #4CAF50 0%, #FFC107 50%, #F44336 100%);
+        }
+        .ai-badge {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+        
+        /* 机械人助手样式 - 修改为趴在边栏上的样式 */
+        #robot-assistant-container {
+            position: fixed;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 60px;
+            height: 120px;
+            z-index: 1000;
+            pointer-events: auto;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+        
+        .robot-image-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .robot-image {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            border-radius: 50% 0 0 50%;
+            box-shadow: -4px 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            border: 2px solid white;
+            position: absolute;
+            right: 0;
+        }
+        
+        /* 消息气泡 - 调整位置 */
+        .robot-message {
+            position: absolute;
+            right: 90px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: white;
+            padding: 12px 16px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 240px;
+            font-size: 14px;
+            line-height: 1.4;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .robot-message:after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: -8px;
+            transform: translateY(-50%);
+            border-width: 8px;
+            border-style: solid;
+            border-color: transparent transparent transparent white;
+        }
+        
+        /* 动画效果 */
+        .talk-animation {
+            animation: talk 0.5s infinite alternate;
+        }
+        
+        .happy-animation {
+            animation: happy 1s ease;
+        }
+        
+        .sad-animation {
+            animation: sad 1s ease;
+        }
+        
+        .nod-animation {
+            animation: nod 0.5s ease;
+        }
+        
+        @keyframes talk {
+            0% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-3px) scale(1.05); }
+            100% { transform: translateY(0) scale(1); }
+        }
+        
+        @keyframes happy {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(10deg); }
+            50% { transform: rotate(-10deg); }
+            75% { transform: rotate(5deg); }
+        }
+        
+        @keyframes sad {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(5px); }
+        }
+        
+        @keyframes nod {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 (与首页一致) -->
+    <nav class="flex items-center justify-between px-6 lg:px-12 h-16 bg-white/90 backdrop-blur-md fixed top-0 left-0 right-0 z-50 border-b border-blue-50">
+        <div class="flex items-center gap-8 lg:gap-16">
+            <a href="墨语智学首页.html" class="flex items-center gap-3">
+                <span class="text-primary text-2xl font-bold tracking-tight">墨语智学</span>
+            </a>
+            <div class="hidden lg:flex items-center gap-8">
+                <a href="墨语智学计划.html" class="text-gray-700 hover:text-primary transition-colors font-medium">备考规划</a>
+                <a href="墨语智学视频.html" class="text-gray-700 hover:text-primary transition-colors font-medium">AI视频课程</a>
+                <a href="墨语智学真题.html" class="text-gray-700 hover:text-primary transition-colors font-medium">真题练习</a>
+                <a href="墨语智学词汇.html" class="text-gray-700 hover:text-primary transition-colors font-medium">词汇学习</a>
+                <a href="#" class="text-gray-700 hover:text-primary transition-colors font-medium">学习社区</a>
+            </div>
+        </div>
+        
+        <!-- 搜索框和用户区域 -->
+        <div class="flex items-center gap-4 lg:gap-6">
+            <div class="relative hidden md:block">
+                <input type="text" placeholder="搜索视频课程..." class="w-[200px] lg:w-[240px] pl-10 pr-4 py-2 border border-gray-200 rounded-button focus:border-primary focus:outline-none">
+                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+            </div>
+            
+            <!-- 动态登录/用户区域 -->
+            <div class="flex items-center gap-4 lg:gap-6" id="auth-section">
+                <div id="login-btn-container">
+                    <a href="墨语智学登录.html" class="flex items-center px-4 lg:px-6 py-2 bg-blue-50 text-primary rounded-button hover:bg-blue-100 transition-colors">
+                        <span class="whitespace-nowrap font-medium text-sm lg:text-base">登录</span>
+                    </a>
+                </div>
+                <a href="墨语智学聊天.html" class="flex items-center px-4 lg:px-6 py-2 bg-primary text-white rounded-button hover:bg-secondary transition-colors">
+                    <span class="whitespace-nowrap font-medium text-sm lg:text-base">免费试用</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容区域 -->
+    <main class="pt-24 pb-16 max-w-[1440px] mx-auto px-6">
+        <!-- 筛选栏 -->
+        <div class="px-6 py-3 border-b flex items-center justify-between bg-gray-50 mb-6 rounded-lg">
+            <div class="flex gap-4">
+                <span class="text-sm text-gray-500">已选择：</span>
+                <div class="flex gap-2">
+                    <span class="px-2 py-1 bg-blue-100 text-primary text-sm rounded-button">四六级 <i class="fas fa-times ml-1"></i></span>
+                    <span class="px-2 py-1 bg-blue-100 text-primary text-sm rounded-button">听力训练 <i class="fas fa-times ml-1"></i></span>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <span class="text-sm text-gray-500">考点覆盖率：</span>
+                <div class="w-[200px] h-2 bg-gray-200 rounded-button overflow-hidden">
+                    <div class="w-[75%] h-full progress-rainbow"></div>
+                </div>
+                <span class="text-sm text-primary">75%</span>
+            </div>
+        </div>
+
+        <!-- 视频课程网格 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- 课程卡片1 -->
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden card-hover transition-all">
+                <div class="relative">
+                    <img src="https://ai-public.mastergo.com/ai/img_res/4f81835c2858a319eba7efb9ff6d03f6.jpg" class="w-full h-[200px] object-cover" alt="AI课程">
+                    <div class="absolute top-2 right-2 flex">
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-gray-300"></i>
+                    </div>
+                    <div class="absolute bottom-2 right-2 flex items-center bg-black bg-opacity-60 px-2 py-1 rounded-full">
+                        <i class="fas fa-fire text-orange-500 mr-1"></i>
+                        <span class="text-white text-sm">98%</span>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <h3 class="font-semibold text-secondary mb-1">商务英语口语进阶</h3>
+                            <p class="text-sm text-gray-600">AI 情景对话 | 职场必备</p>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="bg-primary bg-opacity-10 text-primary text-xs px-2 py-1 rounded-full">AI 金讲</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="fas fa-users text-gray-400 mr-1 text-sm"></i>
+                            <span class="text-sm text-gray-500">2,345 人在学</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-clock text-gray-400 mr-1 text-sm"></i>
+                            <span class="text-sm text-gray-500">120 分钟</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 课程卡片2 -->
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden card-hover transition-all">
+                <div class="relative">
+                    <img src="https://ai-public.mastergo.com/ai/img_res/c62474d9490954385e1af0851a1d66da.jpg" class="w-full h-[200px] object-cover" alt="AI课程">
+                    <div class="absolute top-2 right-2 flex">
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-gray-300"></i>
+                        <i class="fas fa-star text-gray-300"></i>
+                    </div>
+                    <div class="absolute bottom-2 right-2 flex items-center bg-black bg-opacity-60 px-2 py-1 rounded-full">
+                        <i class="fas fa-fire text-orange-500 mr-1"></i>
+                        <span class="text-white text-sm">85%</span>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <h3 class="font-semibold text-secondary mb-1">语法精讲系列</h3>
+                            <p class="text-sm text-gray-600">虚拟语气 | 从入门到精通</p>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="bg-primary bg-opacity-10 text-primary text-xs px-2 py-1 rounded-full">AI 金讲</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="fas fa-users text-gray-400 mr-1 text-sm"></i>
+                            <span class="text-sm text-gray-500">1,876 人在学</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-clock text-gray-400 mr-1 text-sm"></i>
+                            <span class="text-sm text-gray-500">90 分钟</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 课程卡片3 -->
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden card-hover transition-all">
+                <div class="relative">
+                    <img src="https://ai-public.mastergo.com/ai/img_res/8bad936df7a37d61f452e780975f1174.jpg" class="w-full h-[200px] object-cover" alt="AI课程">
+                    <div class="absolute top-2 right-2 flex">
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                    </div>
+                    <div class="absolute bottom-2 right-2 flex items-center bg-black bg-opacity-60 px-2 py-1 rounded-full">
+                        <i class="fas fa-fire text-orange-500 mr-1"></i>
+                        <span class="text-white text-sm">95%</span>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <h3 class="font-semibold text-secondary mb-1">高频词汇突破</h3>
+                            <p class="text-sm text-gray-600">四六级必备 | 记忆法</p>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="bg-primary bg-opacity-10 text-primary text-xs px-2 py-1 rounded-full">AI 金讲</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="fas fa-users text-gray-400 mr-1 text-sm"></i>
+                            <span class="text-sm text-gray-500">3,421 人在学</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-clock text-gray-400 mr-1 text-sm"></i>
+                            <span class="text-sm text-gray-500">150 分钟</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 课程卡片4 -->
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden card-hover transition-all">
+                <div class="relative">
+                    <img src="https://ai-public.mastergo.com/ai/img_res/6edc1cdcc59041790c195be927d70950.jpg" class="w-full h-[200px] object-cover" alt="AI课程">
+                    <div class="absolute top-2 right-2 flex">
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-gray-300"></i>
+                    </div>
+                    <div class="absolute bottom-2 right-2 flex items-center bg-black bg-opacity-60 px-2 py-1 rounded-full">
+                        <i class="fas fa-fire text-orange-500 mr-1"></i>
+                        <span class="text-white text-sm">92%</span>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <h3 class="font-semibold text-secondary mb-1">听力特训营</h3>
+                            <p class="text-sm text-gray-600">场景对话 | 听力技巧</p>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="bg-primary bg-opacity-10 text-primary text-xs px-2 py-1 rounded-full">AI 金讲</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="fas fa-users text-gray-400 mr-1 text-sm"></i>
+                            <span class="text-sm text-gray-500">2,789 人在学</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-clock text-gray-400 mr-1 text-sm"></i>
+                            <span class="text-sm text-gray-500">180 分钟</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 课程卡片5 -->
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden card-hover transition-all">
+                <div class="relative">
+                    <img src="https://ai-public.mastergo.com/ai/img_res/5d74927c0728d84eed2da0502713f883.jpg" class="w-full h-[200px] object-cover" alt="AI课程">
+                    <div class="absolute top-2 right-2 flex">
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-gray-300"></i>
+                    </div>
+                    <div class="absolute bottom-2 right-2 flex items-center bg-black bg-opacity-60 px-2 py-1 rounded-full">
+                        <i class="fas fa-fire text-orange-500 mr-1"></i>
+                        <span class="text-white text-sm">89%</span>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <h3 class="font-semibold text-secondary mb-1">写作进阶课程</h3>
+                            <p class="text-sm text-gray-600">高分写作 | 实战技巧</p>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="bg-primary bg-opacity-10 text-primary text-xs px-2 py-1 rounded-full">AI 金讲</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="fas fa-users text-gray-400 mr-1 text-sm"></i>
+                            <span class="text-sm text-gray-500">1,654 人在学</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-clock text-gray-400 mr-1 text-sm"></i>
+                            <span class="text-sm text-gray-500">160 分钟</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 课程卡片6 -->
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden card-hover transition-all">
+                <div class="relative">
+                    <img src="https://ai-public.mastergo.com/ai/img_res/a510a6e17c47db481734345bfd1050a5.jpg" class="w-full h-[200px] object-cover" alt="AI课程">
+                    <div class="absolute top-2 right-2 flex">
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-gray-300"></i>
+                        <i class="fas fa-star text-gray-300"></i>
+                    </div>
+                    <div class="absolute bottom-2 right-2 flex items-center bg-black bg-opacity-60 px-2 py-1 rounded-full">
+                        <i class="fas fa-fire text-orange-500 mr-1"></i>
+                        <span class="text-white text-sm">82%</span>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <h3 class="font-semibold text-secondary mb-1">阅读理解突破</h3>
+                            <p class="text-sm text-gray-600">快速阅读 | 解题技巧</p>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="bg-primary bg-opacity-10 text-primary text-xs px-2 py-1 rounded-full">AI 金讲</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="fas fa-users text-gray-400 mr-1 text-sm"></i>
+                            <span class="text-sm text-gray-500">2,123 人在学</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-clock text-gray-400 mr-1 text-sm"></i>
+                            <span class="text-sm text-gray-500">140 分钟</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 课程卡片7 -->
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden card-hover transition-all">
+                <div class="relative">
+                    <img src="https://ai-public.mastergo.com/ai/img_res/8a95593ceff398b9a3975ad1a3009b4e.jpg" class="w-full h-[200px] object-cover" alt="AI课程">
+                    <div class="absolute top-2 right-2 flex">
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                    </div>
+                    <div class="absolute bottom-2 right-2 flex items-center bg-black bg-opacity-60 px-2 py-1 rounded-full">
+                        <i class="fas fa-fire text-orange-500 mr-1"></i>
+                        <span class="text-white text-sm">96%</span>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <h3 class="font-semibold text-secondary mb-1">翻译技巧精讲</h3>
+                            <p class="text-sm text-gray-600">中英互译 | 专业技巧</p>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="bg-primary bg-opacity-10 text-primary text-xs px-2 py-1 rounded-full">AI 金讲</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="fas fa-users text-gray-400 mr-1 text-sm"></i>
+                            <span class="text-sm text-gray-500">3,567 人在学</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-clock text-gray-400 mr-1 text-sm"></i>
+                            <span class="text-sm text-gray-500">200 分钟</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 课程卡片8 -->
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden card-hover transition-all">
+                <div class="relative">
+                    <img src="https://ai-public.mastergo.com/ai/img_res/9c1e72d72d792aa60dcf05f67d464f9c.jpg" class="w-full h-[200px] object-cover" alt="AI课程">
+                    <div class="absolute top-2 right-2 flex">
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-yellow-400"></i>
+                        <i class="fas fa-star text-gray-300"></i>
+                    </div>
+                    <div class="absolute bottom-2 right-2 flex items-center bg-black bg-opacity-60 px-2 py-1 rounded-full">
+                        <i class="fas fa-fire text-orange-500 mr-1"></i>
+                        <span class="text-white text-sm">91%</span>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <h3 class="font-semibold text-secondary mb-1">考前冲刺班</h3>
+                            <p class="text-sm text-gray-600">真题解析 | 考点预测</p>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="bg-primary bg-opacity-10 text-primary text-xs px-2 py-1 rounded-full">AI 金讲</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="fas fa-users text-gray-400 mr-1 text-sm"></i>
+                            <span class="text-sm text-gray-500">4,231 人在学</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-clock text-gray-400 mr-1 text-sm"></i>
+                            <span class="text-sm text-gray-500">240 分钟</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 分页 -->
+        <div class="flex justify-center mb-8">
+            <div class="flex items-center gap-2">
+                <button class="w-8 h-8 flex items-center justify-center border border-gray-200 rounded-button hover:bg-gray-50 transition-colors">
+                    <i class="fas fa-chevron-left text-gray-400"></i>
+                </button>
+                <button class="w-8 h-8 flex items-center justify-center border border-primary bg-primary text-white rounded-button">1</button>
+                <button class="w-8 h-8 flex items-center justify-center border border-gray-200 text-gray-600 rounded-button hover:bg-gray-50 transition-colors">2</button>
+                <button class="w-8 h-8 flex items-center justify-center border border-gray-200 text-gray-600 rounded-button hover:bg-gray-50 transition-colors">3</button>
+                <span class="text-gray-400">...</span>
+                <button class="w-8 h-8 flex items-center justify-center border border-gray-200 text-gray-600 rounded-button hover:bg-gray-50 transition-colors">12</button>
+                <button class="w-8 h-8 flex items-center justify-center border border-gray-200 rounded-button hover:bg-gray-50 transition-colors">
+                    <i class="fas fa-chevron-right text-gray-400"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- 虚拟课堂场景 -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h3 class="text-lg font-semibold text-secondary mb-6">虚拟课堂场景</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="border border-gray-200 rounded-lg overflow-hidden card-hover transition-all">
+                    <img src="https://ai-public.mastergo.com/ai/img_res/97d242a4187ee7ef91f58621b69989ab.jpg" class="w-full h-[160px] object-cover" alt="虚拟图书馆">
+                    <div class="p-4">
+                        <h4 class="font-medium text-secondary mb-1">智能图书馆</h4>
+                        <p class="text-sm text-gray-600">虚拟学习空间 | 智能书架</p>
+                    </div>
+                </div>
+                <div class="border border-gray-200 rounded-lg overflow-hidden card-hover transition-all">
+                    <img src="https://ai-public.mastergo.com/ai/img_res/4e6e11b0b9cf32e973e67ff68372b143.jpg" class="w-full h-[160px] object-cover" alt="语音实验室">
+                    <div class="p-4">
+                        <h4 class="font-medium text-secondary mb-1">语音实验室</h4>
+                        <p class="text-sm text-gray-600">听说训练 | 发音矫正</p>
+                    </div>
+                </div>
+                <div class="border border-gray-200 rounded-lg overflow-hidden card-hover transition-all">
+                    <img src="https://ai-public.mastergo.com/ai/img_res/a6425301d6689dd01b322fb389cf5c69.jpg" class="w-full h-[160px] object-cover" alt="考场模拟">
+                    <div class="p-4">
+                        <h4 class="font-medium text-secondary mb-1">四六级考场</h4>
+                        <p class="text-sm text-gray-600">考试模拟 | 实战体验</p>
+                    </div>
+                </div>
+                <div class="border border-gray-200 rounded-lg overflow-hidden card-hover transition-all">
+                    <img src="https://ai-public.mastergo.com/ai/img_res/df11c284827265d64b65cfa7f61cf136.jpg" class="w-full h-[160px] object-cover" alt="互动教室">
+                    <div class="p-4">
+                        <h4 class="font-medium text-secondary mb-1">互动教室</h4>
+                        <p class="text-sm text-gray-600">小组讨论 | 协作学习</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 机械人助手容器 - 修改为趴在边栏上的样式 -->
+    <div id="robot-assistant-container">
+        <div class="robot-image-container">
+            <img src="https://imgur.la/images/2025/06/08/AB9D66DF1072932D11D8D306BE46693C.jpg" alt="小助手" class="robot-image">
+        </div>
+        <div class="robot-message"></div>
+    </div>
+
+    <script>
+        // 初始化机械人助手
+        function initRobotAssistant() {
+            const container = document.getElementById('robot-assistant-container');
+            if (!container) return;
+            
+            // 配置机械人助手
+            const robotAssistant = {
+                messages: [
+                    "需要推荐视频课程吗？",
+                    "点击我可以获得学习建议哦~",
+                    "这些AI视频课程很适合你！",
+                    "有什么课程问题尽管问我吧！",
+                    "你的学习进度很不错，继续加油！",
+                    "想了解如何高效观看视频课程吗？"
+                ],
+                messageElement: null,
+                imageElement: null,
+                
+                init: function() {
+                    // 创建或获取消息元素
+                    this.messageElement = container.querySelector('.robot-message');
+                    this.imageElement = container.querySelector('.robot-image');
+                    
+                    // 添加点击事件
+                    container.addEventListener('click', () => {
+                        this.showRandomMessage(4000);
+                        this.startTalkingAnimation();
+                    });
+                    
+                    // 初始动画
+                    this.playHappyAnimation();
+                    
+                    // 显示欢迎消息
+                    setTimeout(() => {
+                        this.showRandomMessage(3000);
+                    }, 2000);
+                },
+                
+                showRandomMessage: function(duration = 3000) {
+                    const randomIndex = Math.floor(Math.random() * this.messages.length);
+                    this.showMessage(this.messages[randomIndex], duration);
+                },
+                
+                showMessage: function(message, duration = 3000) {
+                    this.messageElement.textContent = message;
+                    this.messageElement.style.display = 'block';
+                    
+                    // 添加动画效果
+                    this.startTalkingAnimation();
+                    
+                    if (duration > 0) {
+                        setTimeout(() => {
+                            this.hideMessage();
+                            this.stopTalkingAnimation();
+                        }, duration);
+                    }
+                },
+                
+                hideMessage: function() {
+                    this.messageElement.style.display = 'none';
+                },
+                
+                startTalkingAnimation: function() {
+                    this.imageElement.classList.add('talk-animation');
+                },
+                
+                stopTalkingAnimation: function() {
+                    this.imageElement.classList.remove('talk-animation');
+                },
+                
+                playHappyAnimation: function() {
+                    this.imageElement.classList.add('happy-animation');
+                    
+                    setTimeout(() => {
+                        this.imageElement.classList.remove('happy-animation');
+                    }, 2000);
+                },
+                
+                playSadAnimation: function() {
+                    this.imageElement.classList.add('sad-animation');
+                    
+                    setTimeout(() => {
+                        this.imageElement.classList.remove('sad-animation');
+                    }, 2000);
+                },
+                
+                playNodAnimation: function() {
+                    this.imageElement.classList.add('nod-animation');
+                    
+                    setTimeout(() => {
+                        this.imageElement.classList.remove('nod-animation');
+                    }, 1000);
+                }
+            };
+            
+            robotAssistant.init();
+        }
+
+        // 内嵌的auth模块
+        const authModule = (function() {
+            // 用户数据存储键名
+            const USER_STORAGE_KEY = 'moyu_user';
+            
+            // DOM元素ID常量
+            const AUTH_SECTION_ID = 'auth-section';
+            const LOGIN_BTN_CONTAINER_ID = 'login-btn-container';
+            
+            // 当前用户数据
+            let currentUser = null;
+            
+            // 初始化函数 - 在所有页面加载时调用
+            function initialize() {
+                // 从本地存储加载用户数据
+                loadUserData();
+                
+                // 更新UI
+                updateAuthUI();
+            }
+            
+            // 加载用户数据
+            function loadUserData() {
+                const userData = localStorage.getItem(USER_STORAGE_KEY);
+                if (userData) {
+                    currentUser = JSON.parse(userData);
+                }
+            }
+            
+            // 保存用户数据
+            function saveUserData(user) {
+                localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+                currentUser = user;
+            }
+            
+            // 清除用户数据
+            function clearUserData() {
+                localStorage.removeItem(USER_STORAGE_KEY);
+                currentUser = null;
+            }
+            
+            // 处理登录
+            function handleLogin(userData) {
+                saveUserData(userData);
+                updateAuthUI();
+            }
+            
+            // 处理登出
+            function handleLogout() {
+                clearUserData();
+                updateAuthUI();
+            }
+            
+            // 检查登录状态
+            function isLoggedIn() {
+                return currentUser !== null;
+            }
+            
+            // 获取当前用户
+            function getCurrentUser() {
+                return currentUser;
+            }
+            
+            // 更新认证UI
+            function updateAuthUI() {
+                const authSection = document.getElementById(AUTH_SECTION_ID);
+                const loginBtnContainer = document.getElementById(LOGIN_BTN_CONTAINER_ID);
+                
+                if (!loginBtnContainer) return;
+                
+                // 清除现有内容
+                loginBtnContainer.innerHTML = '';
+                
+                if (isLoggedIn()) {
+                    // 创建用户头像和下拉菜单
+                    createUserDropdown(loginBtnContainer);
+                } else {
+                    // 创建登录按钮
+                    createLoginButton(loginBtnContainer);
+                }
+            }
+            
+            // 创建登录按钮
+            function createLoginButton(container) {
+                const loginBtn = document.createElement('a');
+                loginBtn.href = '墨语智学登录.html';
+                loginBtn.className = 'flex items-center px-4 lg:px-6 py-2 bg-blue-50 text-primary rounded-button hover:bg-blue-100 transition-colors';
+                loginBtn.innerHTML = '<span class="whitespace-nowrap font-medium text-sm lg:text-base">登录</span>';
+                
+                container.appendChild(loginBtn);
+            }
+            
+            // 创建用户下拉菜单
+            function createUserDropdown(container) {
+                // 用户头像按钮
+                const avatarBtn = document.createElement('div');
+                avatarBtn.className = 'relative group';
+                avatarBtn.id = 'user-dropdown';
+                
+                // 头像图片
+                const avatarImg = document.createElement('img');
+                avatarImg.src = currentUser.avatar || 'https://imgur.la/images/2025/06/07/94B2FFC12D41C799B69B2668BBA16BE7.jpg';
+                avatarImg.alt = currentUser.name || '用户';
+                avatarImg.className = 'w-8 h-8 rounded-full cursor-pointer object-cover';
+                avatarImg.style.minWidth = '32px';
+                
+                // 下拉菜单
+                const dropdownMenu = document.createElement('div');
+                dropdownMenu.className = 'absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 origin-top-right transform transition-all duration-200 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100';
+                dropdownMenu.style.transformOrigin = 'top right';
+                
+                dropdownMenu.innerHTML = `
+                    <div class="py-1" role="menu" aria-orientation="vertical">
+                        <div class="px-4 py-2 border-b border-gray-100">
+                            <p class="text-sm font-medium text-gray-900">${currentUser.name || '用户'}</p>
+                            <p class="text-xs text-gray-500">${currentUser.username || ''}</p>
+                        </div>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-primary transition-colors" role="menuitem">
+                            <i class="fas fa-user mr-2"></i>个人中心
+                        </a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-primary transition-colors" role="menuitem">
+                            <i class="fas fa-cog mr-2"></i>设置
+                        </a>
+                        <a href="#" id="logout-btn" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-primary transition-colors" role="menuitem">
+                            <i class="fas fa-sign-out-alt mr-2"></i>退出登录
+                        </a>
+                    </div>
+                `;
+                
+                avatarBtn.appendChild(avatarImg);
+                avatarBtn.appendChild(dropdownMenu);
+                container.appendChild(avatarBtn);
+                
+                // 添加登出按钮事件
+                const logoutBtn = dropdownMenu.querySelector('#logout-btn');
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        handleLogout();
+                    });
+                }
+                
+                // 点击外部关闭菜单
+                document.addEventListener('click', function(e) {
+                    if (!avatarBtn.contains(e.target)) {
+                        dropdownMenu.classList.remove('opacity-100', 'scale-100');
+                        dropdownMenu.classList.add('opacity-0', 'scale-95');
+                    }
+                });
+            }
+            
+            // 公共API
+            return {
+                initialize,
+                handleLogin,
+                handleLogout,
+                isLoggedIn,
+                getCurrentUser
+            };
+        })();
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            authModule.initialize();
+            initRobotAssistant();
+        });
+    </script>
+</body>
+</html>
